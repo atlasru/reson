@@ -62,6 +62,8 @@ impl Storage {
             .map(|t| intern_track(&tx, t))
             .collect::<Result<Vec<_>>>()?;
         tx.commit()?;
+        drop(conn);
+        self.cleanup_metadata()?;
         Ok(tracks)
     }
     pub fn intern_artists(&self, artists: Vec<Artist>) -> Result<Vec<Artist>> {
@@ -309,6 +311,25 @@ fn intern_track(tx: &Transaction<'_>, mut track: Track) -> Result<Track> {
         if let Some(id) = id {
             track.internal_id = Uuid::parse_str(&id).map_err(|_| Error::Malformed)?;
             break;
+        }
+    }
+    let previous: Option<String> = tx
+        .query_row(
+            "SELECT json FROM tracks WHERE id=?1",
+            [track.internal_id.to_string()],
+            |r| r.get(0),
+        )
+        .optional()?;
+    if let Some(previous) = previous {
+        let previous: Track = serde_json::from_str(&previous)?;
+        for source in previous.sources {
+            if !track
+                .sources
+                .iter()
+                .any(|s| s.provider == source.provider && s.provider_id == source.provider_id)
+            {
+                track.sources.push(source);
+            }
         }
     }
     track.artists = track

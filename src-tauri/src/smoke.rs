@@ -1,5 +1,5 @@
 use reson_core::{
-    audio::{AudioCommand, AudioEvent, NativeAudio},
+    audio::{diagnostics::inspect_pcm, AudioCommand, AudioEvent, NativeAudio},
     error::{Error, Result},
     providers::{soundcloud::SoundCloudProvider, MusicProvider},
 };
@@ -17,7 +17,7 @@ pub async fn run() -> Result<()> {
     let source = provider.resolve_stream(&track.sources[0]).await?;
     let root = std::env::temp_dir().join(format!("reson-smoke-{}", uuid::Uuid::new_v4()));
     std::fs::create_dir_all(&root)?;
-    let path = root.join("audio.wav");
+    let path = root.join("audio.f32");
     let lib = if cfg!(target_os = "windows") {
         Some(
             std::env::current_exe()?
@@ -34,7 +34,7 @@ pub async fn run() -> Result<()> {
         position_ms: 0,
         paused: false,
     })?;
-    let result = tokio::time::timeout(std::time::Duration::from_secs(45), async {
+    let result = tokio::time::timeout(std::time::Duration::from_secs(120), async {
         loop {
             match events.recv().await {
                 Some(AudioEvent::Position(p)) if p > 3000 => return Ok(()),
@@ -45,18 +45,16 @@ pub async fn run() -> Result<()> {
         }
     })
     .await
-    .map_err(|_| Error::Audio("Native audio validation timed out".into()))?;
-    audio.send(AudioCommand::Stop)?;
-    audio.send(AudioCommand::Shutdown)?;
+    .unwrap_or_else(|_| Err(Error::Audio("Native audio validation timed out".into())));
+    let _ = audio.send(AudioCommand::Stop);
+    let _ = audio.send(AudioCommand::Shutdown);
     tokio::time::sleep(std::time::Duration::from_millis(500)).await;
-    let bytes = std::fs::metadata(&path).map(|m| m.len()).unwrap_or(0);
+    let evidence = inspect_pcm(&path);
     let _ = std::fs::remove_dir_all(&root);
     result?;
-    if bytes < 4096 {
-        return Err(Error::Audio("No PCM audio produced".into()));
-    }
+    let evidence = evidence?;
     println!(
-        "Real SoundCloud search → track → refreshed source → native PCM output: {bytes} bytes"
+        "Real SoundCloud search → track → refreshed source → native PCM output: {} samples, RMS {:.6}, peak {:.6}", evidence.samples, evidence.rms, evidence.peak
     );
     Ok(())
 }

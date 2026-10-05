@@ -84,15 +84,44 @@ impl Transport {
         ))
     }
     async fn text(&self, url: &str, limit: usize, cancel: &CancellationToken) -> Result<String> {
-        let response = tokio::select! { _=cancel.cancelled()=>return Err(Error::Cancelled), r=self.client.get(url).send()=>r.map_err(|e| { eprintln!("Public resource failure on {}: {:?}", url::Url::parse(url).unwrap().host_str().unwrap(), e.without_url()); Error::Network })? };
-        if !response.status().is_success() {
-            return Err(Error::Invalid(format!(
-                "SoundCloud public resources returned HTTP {}",
-                response.status().as_u16()
-            )));
+        for attempt in 0..3 {
+            let response = tokio::select! {_=cancel.cancelled()=>return Err(Error::Cancelled),r=self.client.get(url).send()=>r};
+            let response = match response {
+                Ok(r) => r,
+                Err(e) => {
+                    tracing::debug!(
+                        timeout = e.is_timeout(),
+                        connect = e.is_connect(),
+                        "public resource request failed"
+                    );
+                    if attempt < 2 {
+                        backoff(attempt, cancel).await?;
+                        continue;
+                    }
+                    return Err(Error::Network);
+                }
+            };
+            let status = response.status();
+            if status.is_server_error() && attempt < 2 {
+                backoff(attempt, cancel).await?;
+                continue;
+            }
+            if !status.is_success() {
+                return Err(Error::Invalid(format!(
+                    "SoundCloud public resources returned HTTP {}",
+                    status.as_u16()
+                )));
+            }
+            match bounded_body(response, limit, cancel).await {
+                Ok(body) => return String::from_utf8(body).map_err(|_| Error::Malformed),
+                Err(Error::Network) if attempt < 2 => {
+                    backoff(attempt, cancel).await?;
+                    continue;
+                }
+                Err(e) => return Err(e),
+            }
         }
-        let body = bounded_body(response, limit, cancel).await?;
-        String::from_utf8(body).map_err(|_| Error::Malformed)
+        Err(Error::Network)
     }
     pub async fn get(
         &self,
@@ -152,7 +181,11 @@ impl Transport {
                     continue;
                 }
                 Err(e) => {
-                    eprintln!("Request failure: {:?}", e.without_url());
+                    tracing::debug!(
+                        timeout = e.is_timeout(),
+                        connect = e.is_connect(),
+                        "provider request failed"
+                    );
                     return Err(Error::Network);
                 }
             };

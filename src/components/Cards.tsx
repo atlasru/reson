@@ -1,4 +1,58 @@
-import {Artwork} from './Artwork';
-import type {Artist,Playlist,Route} from '../stores/types';
-export function ArtistCards({artists,navigate}:{artists:Artist[];navigate:(r:Route)=>void}){return <div className="cards">{artists.map(a=><button className="entity-card artist-card" key={a.internal_id} onClick={()=>{const ref=a.references[0];if(ref)navigate({page:'artist',provider:ref.provider,id:ref.provider_id});}}><Artwork url={a.artwork}/><strong>{a.name}</strong><small>Artist / user</small></button>)}</div>;}
-export function PlaylistCards({playlists,navigate}:{playlists:Playlist[];navigate:(r:Route)=>void}){return <div className="cards">{playlists.map(p=><button className="entity-card" key={p.internal_id} onClick={()=>navigate({page:'playlist',playlist:p})}><Artwork url={p.artwork}/><strong>{p.title}</strong><small>{p.owner?.name??'Your playlist'} · {p.track_count} tracks</small></button>)}</div>;}
+import { Artwork } from "./Artwork";
+import type { Artist, Playlist, Route } from "../stores/types";
+export function ArtistCards({
+  artists,
+  navigate,
+}: {
+  artists: Artist[];
+  navigate: (r: Route) => void;
+}) {
+  return (
+    <div className="cards">
+      {artists.map((a) => (
+        <button
+          className="entity-card artist-card"
+          key={a.internal_id}
+          onClick={() => {
+            const ref = a.references[0];
+            if (ref)
+              navigate({
+                page: "artist",
+                provider: ref.provider,
+                id: ref.provider_id,
+              });
+          }}
+        >
+          <Artwork url={a.artwork} />
+          <strong>{a.name}</strong>
+          <small>Artist / user</small>
+        </button>
+      ))}
+    </div>
+  );
+}
+export function PlaylistCards({
+  playlists,
+  navigate,
+}: {
+  playlists: Playlist[];
+  navigate: (r: Route) => void;
+}) {
+  return (
+    <div className="cards">
+      {playlists.map((p) => (
+        <button
+          className="entity-card"
+          key={p.internal_id}
+          onClick={() => navigate({ page: "playlist", playlist: p })}
+        >
+          <Artwork url={p.artwork} />
+          <strong>{p.title}</strong>
+          <small>
+            {p.owner?.name ?? "Your playlist"} · {p.track_count} tracks
+          </small>
+        </button>
+      ))}
+    </div>
+  );
+}

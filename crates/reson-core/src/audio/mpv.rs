@@ -21,7 +21,12 @@ struct MpvProperty {
     data: *mut c_void,
 }
 #[repr(C)]
-struct MpvLog{prefix:*const c_char,level:*const c_char,text:*const c_char,log_level:c_int}
+struct MpvLog {
+    prefix: *const c_char,
+    level: *const c_char,
+    text: *const c_char,
+    log_level: c_int,
+}
 #[repr(C)]
 struct MpvEndFile {
     reason: c_int,
@@ -57,7 +62,7 @@ struct Api {
     wake_callback:
         unsafe extern "C" fn(*mut c_void, Option<unsafe extern "C" fn(*mut c_void)>, *mut c_void),
     destroy: unsafe extern "C" fn(*mut c_void),
-    request_log:unsafe extern "C" fn(*mut c_void,*const c_char)->c_int,
+    request_log: unsafe extern "C" fn(*mut c_void, *const c_char) -> c_int,
     get_property: unsafe extern "C" fn(*mut c_void, *const c_char, c_int, *mut c_void) -> c_int,
     free_node: unsafe extern "C" fn(*mut MpvNode),
     error_string: unsafe extern "C" fn(c_int) -> *const c_char,
@@ -110,7 +115,7 @@ impl Api {
             wait: symbol!("mpv_wait_event"),
             wake_callback: symbol!("mpv_set_wakeup_callback"),
             destroy: symbol!("mpv_terminate_destroy"),
-            request_log:symbol!("mpv_request_log_messages"),
+            request_log: symbol!("mpv_request_log_messages"),
             get_property: symbol!("mpv_get_property"),
             free_node: symbol!("mpv_free_node_contents"),
             error_string: symbol!("mpv_error_string"),
@@ -160,14 +165,22 @@ impl Mpv {
         ] {
             this.option(key, value)?;
         }
-        if let Ok(proxy)=std::env::var("https_proxy"){this.option("http-proxy",&proxy)?;}
-        if let Ok(cert)=std::env::var("SSL_CERT_FILE"){this.option("tls-ca-file",&cert)?;}
+        if let Ok(proxy) = std::env::var("https_proxy").or_else(|_| std::env::var("HTTPS_PROXY")) {
+            this.option("http-proxy", &proxy)?;
+        }
+        if let Ok(cert) = std::env::var("SSL_CERT_FILE") {
+            this.option("tls-ca-file", &cert)?;
+        }
         if let Some(output) = output {
             this.option("ao", "pcm")?;
             this.option("ao-pcm-file", &output.to_string_lossy())?;
+            this.option("ao-pcm-waveheader", "no")?;
+            this.option("audio-format", "float")?;
+            this.option("audio-samplerate", "48000")?;
+            this.option("audio-channels", "stereo")?;
         }
         this.check(unsafe { (this.api.initialize)(handle) })?;
-        this.check(unsafe{(this.api.request_log)(handle,c"warn".as_ptr())})?;
+        this.check(unsafe { (this.api.request_log)(handle, c"warn".as_ptr()) })?;
         // Property notifications drive synchronization. Idle waits on a channel.
         for (index, (name, format)) in [
             ("time-pos", 5),
@@ -375,7 +388,15 @@ pub fn start(
                 let event=unsafe{(mpv.api.wait)(mpv.handle,0.0)};
                 if event.is_null(){break;}let event=unsafe{&*event};if event.id==0 {break;}
                 let value=match event.id {
-                    2 if !event.data.is_null()=>{let log=unsafe{&*event.data.cast::<MpvLog>()};if !log.text.is_null(){let text=unsafe{CStr::from_ptr(log.text)}.to_string_lossy();let re=regex::Regex::new(r"https?://[^\s]+" ).unwrap();eprintln!("Native diagnostic: {}",re.replace_all(&text,"[stream URL]"));}None},
+                    2 if !event.data.is_null()=> {
+                        let log=unsafe{&*event.data.cast::<MpvLog>()};
+                        if !log.text.is_null(){
+                            let message=unsafe{CStr::from_ptr(log.text)}.to_string_lossy().to_lowercase();
+                            let category=if message.contains("certificate")||message.contains("tls"){"tls"}else if message.contains("audio")||message.contains("device"){"audio_device"}else if message.contains("http")||message.contains("network"){"network"}else{"decoder"};
+                            tracing::debug!(category,severity=log.log_level,"native playback diagnostic");
+                        }
+                        None
+                    },
                     8=>{
                         if let Some((position,paused))=pending_load.take(){
                             let result=(||{if position>0{mpv.execute(AudioCommand::Seek(position))?;}mpv.execute(AudioCommand::Pause(paused))})();

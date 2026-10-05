@@ -61,6 +61,7 @@ pub async fn search(
     if request_id.len() > 80 {
         return Err(Error::Invalid("Invalid request identifier".into()));
     }
+    let provider = state.providers.get(&provider)?;
     let cancel = CancellationToken::new();
     {
         let mut requests = state.requests.lock().await;
@@ -71,11 +72,7 @@ pub async fn search(
             old.cancel();
         }
     }
-    let result = state
-        .providers
-        .get(&provider)?
-        .search(&query, offset, cancel)
-        .await;
+    let result = provider.search(&query, offset, cancel).await;
     state.requests.lock().await.remove(&request_id);
     let mut result = result?;
     result.tracks = state.storage.intern_tracks(result.tracks)?;

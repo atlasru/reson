@@ -63,6 +63,7 @@ enum Message {
         generation: u64,
         result: Result<StreamSource>,
     },
+    LoadTimeout(u64),
 }
 #[derive(Clone)]
 pub struct Player {
@@ -111,6 +112,7 @@ impl Player {
             sender: sender.clone(),
             generation: 0,
             resolver: None,
+            load_timeout: None,
             loaded: false,
             want_play: false,
             retries: 0,
@@ -147,6 +149,7 @@ struct Actor {
     sender: mpsc::Sender<Message>,
     generation: u64,
     resolver: Option<tokio::task::JoinHandle<()>>,
+    load_timeout: Option<tokio::task::JoinHandle<()>>,
     loaded: bool,
     want_play: bool,
     retries: u8,
@@ -166,6 +169,13 @@ impl Actor {
                     Message::Action(command,reply)=>{let shutdown=matches!(command,PlayerCommand::Shutdown);let result=self.action(command);if let Err(e)=&result{tracing::warn!(error=%e,"player command rejected");}let _=reply.send(result);if shutdown{break;}},
                     Message::Resolved{generation,result} if generation==self.generation=>self.resolved(result),
                     Message::Resolved{..}=>{},
+                    Message::LoadTimeout(generation) if generation == self.generation && !self.loaded => {
+                        if let Some(resolver) = self.resolver.take() { resolver.abort(); }
+                        let _ = self.audio.send(AudioCommand::Stop);
+                        self.failure(Error::Audio("Playback timed out. Check your connection and try again.".into()));
+                        self.publish();
+                    },
+                    Message::LoadTimeout(_)=>{},
                 },
                 Some(event)=events.recv()=>self.event(event),
                 else=>break,
@@ -173,6 +183,9 @@ impl Actor {
         }
         if let Some(resolver) = self.resolver.take() {
             resolver.abort();
+        }
+        if let Some(timeout) = self.load_timeout.take() {
+            timeout.abort();
         }
         let _ = self.save();
         let _ = self.audio.send(AudioCommand::Shutdown);
@@ -259,7 +272,11 @@ impl Actor {
             PlayerCommand::Previous => {
                 self.failed = 0;
                 if self.state.position_ms > 3000 {
-                    self.audio.send(AudioCommand::Seek(0))?;
+                    if self.loaded {
+                        self.audio.send(AudioCommand::Seek(0))?;
+                    } else {
+                        self.begin(0, self.want_play, false)?;
+                    }
                     self.state.position_ms = 0;
                 } else if self.queue.previous().is_some() {
                     self.begin(0, true, true)?;
@@ -295,7 +312,7 @@ impl Actor {
     fn pause(&mut self) -> Result<()> {
         self.want_play = false;
         self.audio.send(AudioCommand::Pause(true))?;
-        if self.state.current.is_some() {
+        if self.state.current.is_some() && self.state.status != PlaybackStatus::Loading {
             self.state.status = PlaybackStatus::Paused;
         }
         Ok(())
@@ -323,6 +340,9 @@ impl Actor {
         if let Some(resolver) = self.resolver.take() {
             resolver.abort();
         }
+        if let Some(timeout) = self.load_timeout.take() {
+            timeout.abort();
+        }
         self.loaded = false;
         self.want_play = false;
         self.state.status = PlaybackStatus::Stopped;
@@ -333,6 +353,9 @@ impl Actor {
         self.generation += 1;
         if let Some(resolver) = self.resolver.take() {
             resolver.abort();
+        }
+        if let Some(timeout) = self.load_timeout.take() {
+            timeout.abort();
         }
         self.audio.send(AudioCommand::Stop)?;
         self.loaded = false;
@@ -356,6 +379,11 @@ impl Actor {
         let providers = self.providers.clone();
         let sender = self.sender.clone();
         let generation = self.generation;
+        let timeout_sender = sender.clone();
+        self.load_timeout = Some(tokio::spawn(async move {
+            tokio::time::sleep(Duration::from_secs(180)).await;
+            let _ = timeout_sender.send(Message::LoadTimeout(generation)).await;
+        }));
         self.resolver = Some(tokio::spawn(async move {
             let result = async {
                 let source = track
@@ -392,6 +420,9 @@ impl Actor {
     fn event(&mut self, event: AudioEvent) {
         match event {
             AudioEvent::Loaded if self.state.status == PlaybackStatus::Loading => {
+                if let Some(timeout) = self.load_timeout.take() {
+                    timeout.abort();
+                }
                 self.loaded = true;
                 self.failed = 0;
                 self.state.status = if self.want_play {
@@ -471,6 +502,9 @@ impl Actor {
     }
     fn failure(&mut self, error: Error) {
         tracing::warn!(error=%error,"playback failed");
+        if let Some(timeout) = self.load_timeout.take() {
+            timeout.abort();
+        }
         self.loaded = false;
         let unavailable = matches!(error, Error::Unavailable);
         self.state.error = Some(error.to_string());

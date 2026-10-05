@@ -1,5 +1,5 @@
 use reson_core::{
-    audio::{AudioCommand, AudioEvent, NativeAudio},
+    audio::{diagnostics::inspect_pcm, AudioCommand, AudioEvent, NativeAudio},
     error::Result,
     providers::{soundcloud::SoundCloudProvider, MusicProvider},
 };
@@ -23,8 +23,9 @@ async fn main() -> Result<()> {
         .ok_or(reson_core::error::Error::Unavailable)?;
     println!("Track: {} / {}", track.title, track.artist_name());
     let source = provider.resolve_stream(&track.sources[0]).await?;
-    println!("Resolved {:?} source", source.kind);std::fs::write("/tmp/reson-native-source.tmp",&source.url)?;
-    let output = std::env::temp_dir().join("reson-probe-audio.wav");
+    println!("Resolved {:?} source", source.kind);
+
+    let output = std::env::temp_dir().join(format!("reson-probe-{}.f32", uuid::Uuid::new_v4()));
     let (audio, mut events) = NativeAudio::start(None, Some(output.clone()))?;
     audio.send(AudioCommand::Load {
         source,
@@ -43,9 +44,15 @@ async fn main() -> Result<()> {
         "PCM output bytes {}",
         std::fs::metadata(&output).map(|m| m.len()).unwrap_or(0)
     );
+    let evidence = inspect_pcm(&output);
     if output.exists() {
         std::fs::remove_file(output)?;
     }
+    let evidence = evidence?;
+    println!(
+        "PCM samples {}, RMS {:.6}, peak {:.6}",
+        evidence.samples, evidence.rms, evidence.peak
+    );
     match provider.discover().await {
         Ok(t) => println!("Discovery: {} tracks", t.len()),
         Err(e) => println!("Discovery: {e}"),

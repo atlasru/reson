@@ -17,4 +17,5 @@ Copy-Item $dll.FullName (Join-Path $resources 'libmpv-2.dll') -Force
 $licenses = Join-Path $resources 'licenses'
 New-Item -ItemType Directory -Force -Path $licenses | Out-Null
 Get-ChildItem $extract -Recurse -File | Where-Object { $_.Name -match 'COPYING|LICENSE|copyright' } | ForEach-Object { Copy-Item $_.FullName (Join-Path $licenses $_.Name) -Force }
+if (-not (Test-Path (Join-Path $licenses 'LGPL-2.1.txt')) -or -not (Test-Path (Join-Path $licenses 'LGPL-3.0.txt'))) { throw 'Required bundled license texts absent' }
 Write-Host 'Verified, pinned LGPL native audio installed.'

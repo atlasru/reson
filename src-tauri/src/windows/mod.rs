@@ -14,13 +14,20 @@ pub fn initialize(window: &tauri::WebviewWindow, player: &reson_core::player::Pl
     let callback_player = player.clone();
     let mut snapshots = player.state.clone();
     let (sender, receiver) = std::sync::mpsc::channel::<reson_core::player::PlayerState>();
-    std::thread::Builder::new()
+    let worker = std::thread::Builder::new()
         .name("reson-windows-media".into())
         .spawn(move || {
             let config = PlatformConfig {
                 dbus_name: "reson",
                 display_name: "Reson",
                 hwnd: Some(hwnd as *mut std::ffi::c_void),
+            };
+            let _runtime = match WinRtRuntime::initialize() {
+                Ok(runtime) => runtime,
+                Err(code) => {
+                    tracing::warn!(code, "Windows Runtime initialization failed");
+                    return;
+                }
             };
             let mut controls = match MediaControls::new(config) {
                 Ok(c) => c,
@@ -72,8 +79,8 @@ pub fn initialize(window: &tauri::WebviewWindow, player: &reson_core::player::Pl
             }
             let mut previous = None;
             while let Ok(state) = receiver.recv() {
-                if state.entry_id != previous {
-                    previous = state.entry_id;
+                if Some((state.entry_id, state.duration_ms)) != previous {
+                    previous = Some((state.entry_id, state.duration_ms));
                     if let Some(track) = &state.current {
                         let artist = track.artist_name();
                         let metadata = MediaMetadata {
@@ -101,11 +108,11 @@ pub fn initialize(window: &tauri::WebviewWindow, player: &reson_core::player::Pl
                 let _ = controls.set_playback(playback);
             }
             let _ = controls.detach();
-        })
-        .unwrap_or_else(|e| {
-            tracing::warn!(error=%e,"Windows media worker unavailable");
-            panic!("Cannot start Windows media worker");
         });
+    if let Err(error) = worker {
+        tracing::warn!(%error, "Windows media worker unavailable");
+        return;
+    }
     tauri::async_runtime::spawn(async move {
         let mut last = String::new();
         loop {
@@ -130,3 +137,31 @@ pub fn initialize(window: &tauri::WebviewWindow, player: &reson_core::player::Pl
 }
 #[cfg(not(target_os = "windows"))]
 pub fn initialize(_window: &tauri::WebviewWindow, _player: &reson_core::player::Player) {}
+
+#[cfg(target_os = "windows")]
+struct WinRtRuntime;
+#[cfg(target_os = "windows")]
+impl WinRtRuntime {
+    fn initialize() -> std::result::Result<Self, i32> {
+        let status = unsafe { RoInitialize(1) };
+        if status < 0 {
+            Err(status)
+        } else {
+            Ok(Self)
+        }
+    }
+}
+#[cfg(target_os = "windows")]
+impl Drop for WinRtRuntime {
+    fn drop(&mut self) {
+        unsafe {
+            RoUninitialize();
+        }
+    }
+}
+#[cfg(target_os = "windows")]
+#[link(name = "runtimeobject")]
+extern "system" {
+    fn RoInitialize(kind: u32) -> i32;
+    fn RoUninitialize();
+}
