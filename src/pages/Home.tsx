@@ -10,7 +10,7 @@ import {
 import type { Route, Track } from "../stores/types";
 import { Artwork } from "../components/Artwork";
 import { TrackList } from "../components/TrackList";
-import { Failure, Skeleton } from "../components/States";
+import { Empty, Failure, Skeleton } from "../components/States";
 export function Home({ navigate }: { navigate: (r: Route) => void }) {
   const lib = useLibrary();
   const providers = useProviders();
@@ -20,15 +20,25 @@ export function Home({ navigate }: { navigate: (r: Route) => void }) {
   const [error, setError] = useState("");
   const [retry, setRetry] = useState(0);
   const source = lib.recent[0]?.sources[0];
-  const provider =
-    selectedSource ?? source?.provider ?? providers[0]?.id ?? "soundcloud";
-  const id = source?.provider === provider ? source.provider_id : undefined;
+  const provider = selectedSource ?? source?.provider ?? providers[0]?.id ?? "";
+  const info = providers.find((p) => p.id === provider);
+  const id =
+    source?.provider === provider && info?.capabilities.includes("related")
+      ? source.provider_id
+      : undefined;
+  const canDiscover = !!info?.capabilities.includes(
+    id ? "related" : "discovery",
+  );
   const name =
     providers.find((p) => p.id === provider)?.display_name ?? provider;
   useEffect(() => {
     let alive = true;
     setLoading(true);
     setError("");
+    if (!canDiscover) {
+      setLoading(false);
+      return;
+    }
     void call<Track[]>(id ? "related_tracks" : "discover", {
       provider,
       id: id ?? null,
@@ -45,7 +55,7 @@ export function Home({ navigate }: { navigate: (r: Route) => void }) {
     return () => {
       alive = false;
     };
-  }, [id, provider, retry]);
+  }, [id, provider, retry, canDiscover]);
   return (
     <div className="page">
       <header className="page-title">
@@ -85,7 +95,12 @@ export function Home({ navigate }: { navigate: (r: Route) => void }) {
         <h2>{id ? "More like your last listen" : `Trending on ${name}`}</h2>
         <span>{name} · Public catalog</span>
       </div>
-      {loading ? (
+      {!canDiscover ? (
+        <Empty
+          title="Explore this source"
+          detail="Use Search to find music and build your queue."
+        />
+      ) : loading ? (
         <Skeleton />
       ) : error ? (
         <Failure message={error} retry={() => setRetry((n) => n + 1)} />

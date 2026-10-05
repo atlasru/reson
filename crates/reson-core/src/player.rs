@@ -326,6 +326,10 @@ impl Actor {
             return Ok(());
         }
         self.want_play = true;
+        if self.state.status == PlaybackStatus::Loading {
+            self.audio.send(AudioCommand::Pause(false))?;
+            return Ok(());
+        }
         if self.loaded {
             self.audio.send(AudioCommand::Pause(false))?;
             self.state.status = PlaybackStatus::Playing;

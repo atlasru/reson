@@ -17,6 +17,8 @@ pub enum Capability {
     Artists,
     Playlists,
     Related,
+    Discovery,
+    UrlResolution,
     Authentication,
     Likes,
     LibraryWrite,
@@ -33,14 +35,26 @@ pub struct ProviderInfo {
 #[async_trait]
 pub trait MusicProvider: Send + Sync {
     fn info(&self) -> ProviderInfo;
+    fn artwork_hosts(&self) -> &'static [&'static str] {
+        &[]
+    }
+    fn external_hosts(&self) -> &'static [&'static str] {
+        &[]
+    }
     async fn search(
         &self,
-        query: &str,
-        offset: u32,
-        cancel: CancellationToken,
-    ) -> Result<SearchResults>;
-    async fn track(&self, id: &str) -> Result<Track>;
-    async fn resolve_stream(&self, source: &TrackSource) -> Result<StreamSource>;
+        _query: &str,
+        _offset: u32,
+        _cancel: CancellationToken,
+    ) -> Result<SearchResults> {
+        Err(Error::Unsupported("search"))
+    }
+    async fn track(&self, _id: &str) -> Result<Track> {
+        Err(Error::Unsupported("track metadata"))
+    }
+    async fn resolve_stream(&self, _source: &TrackSource) -> Result<StreamSource> {
+        Err(Error::Unsupported("playback"))
+    }
     async fn artist(&self, _id: &str, _offset: u32) -> Result<ArtistPage> {
         Err(Error::Unsupported("artists"))
     }
@@ -73,6 +87,35 @@ impl ProviderRegistry {
             .ok_or_else(|| Error::Invalid("Unknown music provider".into()))
     }
     pub fn list(&self) -> Vec<ProviderInfo> {
-        self.providers.values().map(|p| p.info()).collect()
+        let mut providers = self
+            .providers
+            .values()
+            .map(|p| p.info())
+            .collect::<Vec<_>>();
+        providers.sort_by(|a, b| a.id.cmp(&b.id));
+        providers
+    }
+    pub fn artwork_hosts(&self) -> Vec<String> {
+        let mut hosts = self
+            .providers
+            .values()
+            .flat_map(|p| p.artwork_hosts().iter().map(|h| (*h).to_owned()))
+            .collect::<Vec<_>>();
+        hosts.sort();
+        hosts.dedup();
+        hosts
+    }
+    pub fn allows_external_url(&self, url: &url::Url) -> bool {
+        url.scheme() == "https"
+            && url.username().is_empty()
+            && url.password().is_none()
+            && url.port().is_none_or(|p| p == 443)
+            && url.host_str().is_some_and(|host| {
+                self.providers.values().any(|p| {
+                    p.external_hosts()
+                        .iter()
+                        .any(|h| host == *h || host == format!("www.{h}"))
+                })
+            })
     }
 }

@@ -3,13 +3,45 @@
   "productName": "Reson",
   "version": "0.1.0",
   "identifier": "dev.atlas.reson",
-  "build": { "beforeDevCommand": "npm run dev", "devUrl": "http://localhost:1420", "beforeBuildCommand": "npm run build", "frontendDist": "../dist" },
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
   "app": {
-    "windows": [{ "label": "main", "title": "Reson", "width": 1240, "height": 800, "minWidth": 820, "minHeight": 580, "theme": "Dark", "backgroundColor": "#111316" }],
+    "windows": [
+      {
+        "label": "main",
+        "title": "Reson",
+        "width": 1240,
+        "height": 800,
+        "minWidth": 820,
+        "minHeight": 580,
+        "theme": "Dark",
+        "backgroundColor": "#111316"
+      }
+    ],
     "security": {
-      "csp": "default-src 'self'; connect-src ipc: http://ipc.localhost; img-src 'self' asset: http://asset.localhost https://*.sndcdn.com data:; style-src 'self' 'unsafe-inline'; script-src 'self'; font-src 'self'; object-src 'none'; frame-src 'none'; base-uri 'none'",
+      "csp": "default-src 'self'; connect-src ipc: http://ipc.localhost; img-src 'self' asset: http://asset.localhost data:; style-src 'self' 'unsafe-inline'; script-src 'self'; font-src 'self'; object-src 'none'; frame-src 'none'; base-uri 'none'",
       "assetProtocol": { "enable": true, "scope": ["$APPCACHE/artwork/**"] }
     }
   },
-  "bundle": { "active": true, "targets": ["nsis"], "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.ico"], "publisher": "atlasru", "copyright": "Copyright 2026 Reson contributors", "shortDescription": "A local-first desktop music player", "category": "Music", "resources": { "resources/THIRD_PARTY_NOTICES.md": "THIRD_PARTY_NOTICES.md" } }
+  "bundle": {
+    "active": true,
+    "targets": ["nsis"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.ico"
+    ],
+    "publisher": "atlasru",
+    "copyright": "Copyright 2026 Reson contributors",
+    "shortDescription": "A local-first desktop music player",
+    "category": "Music",
+    "resources": {
+      "resources/THIRD_PARTY_NOTICES.md": "THIRD_PARTY_NOTICES.md"
+    }
+  }
 }

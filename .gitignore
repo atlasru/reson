@@ -5,6 +5,7 @@ src-tauri/target/
 src-tauri/gen/
 src-tauri/resources/*.dll
 src-tauri/resources/*.7z
+src-tauri/resources/licenses/DEPENDENCIES.txt
 *.log
 .env
 .env.*

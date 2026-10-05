@@ -284,6 +284,95 @@ pub fn validate_stream_url(raw: &str) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use wiremock::{matchers::method, Mock, MockServer, ResponseTemplate};
+
+    fn isolated_transport() -> Transport {
+        let mut transport = Transport::new().unwrap();
+        transport.client = Client::builder().no_proxy().build().unwrap();
+        transport.identifier = Mutex::new(Some(("test-public-config".into(), Instant::now())));
+        transport
+    }
+
+    #[tokio::test]
+    async fn malformed_json_is_reported_without_panicking() {
+        let server = MockServer::start().await;
+        Mock::given(method("GET"))
+            .respond_with(ResponseTemplate::new(200).set_body_string("{not valid json"))
+            .expect(1)
+            .mount(&server)
+            .await;
+        let result = isolated_transport()
+            .request(&server.uri(), &[], &CancellationToken::new())
+            .await;
+        assert!(matches!(result, Err(Error::Malformed)));
+    }
+
+    #[tokio::test]
+    async fn rate_limit_blocks_followup_requests() {
+        let server = MockServer::start().await;
+        Mock::given(method("GET"))
+            .respond_with(ResponseTemplate::new(429).insert_header("retry-after", "90"))
+            .expect(1)
+            .mount(&server)
+            .await;
+        let transport = isolated_transport();
+        for _ in 0..2 {
+            assert!(matches!(
+                transport
+                    .request(&server.uri(), &[], &CancellationToken::new())
+                    .await,
+                Err(Error::RateLimited(1..=90))
+            ));
+        }
+    }
+
+    #[tokio::test]
+    async fn cancellation_interrupts_inflight_network_io() {
+        let server = MockServer::start().await;
+        Mock::given(method("GET"))
+            .respond_with(
+                ResponseTemplate::new(200)
+                    .set_body_json(serde_json::json!({}))
+                    .set_delay(Duration::from_secs(5)),
+            )
+            .mount(&server)
+            .await;
+        let transport = isolated_transport();
+        let cancel = CancellationToken::new();
+        let abort = cancel.clone();
+        tokio::spawn(async move {
+            tokio::time::sleep(Duration::from_millis(50)).await;
+            abort.cancel();
+        });
+        let result = tokio::time::timeout(
+            Duration::from_secs(1),
+            transport.request(&server.uri(), &[], &cancel),
+        )
+        .await
+        .unwrap();
+        assert!(matches!(result, Err(Error::Cancelled)));
+    }
+
+    #[tokio::test]
+    async fn response_body_limit_is_enforced_before_parsing() {
+        let server = MockServer::start().await;
+        Mock::given(method("GET"))
+            .respond_with(ResponseTemplate::new(200).set_body_bytes(vec![0; 128]))
+            .mount(&server)
+            .await;
+        let response = Client::builder()
+            .no_proxy()
+            .build()
+            .unwrap()
+            .get(server.uri())
+            .send()
+            .await
+            .unwrap();
+        assert!(matches!(
+            bounded_body(response, 64, &CancellationToken::new()).await,
+            Err(Error::Malformed)
+        ));
+    }
     #[test]
     fn stream_hosts_are_bounded() {
         for u in [

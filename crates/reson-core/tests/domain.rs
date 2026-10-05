@@ -136,4 +136,77 @@ fn registry_exposes_capabilities_without_forcing_authentication() {
         .capabilities
         .contains(&Capability::Authentication));
     assert!(r.get("missing").is_err());
+    assert!(r.allows_external_url(&url::Url::parse("https://soundcloud.com/artist/track").unwrap()));
+    assert!(!r
+        .allows_external_url(&url::Url::parse("https://soundcloud.com.evil.test/artist").unwrap()));
+}
+
+#[tokio::test]
+async fn provider_with_no_search_does_not_need_to_implement_it() {
+    struct OptionalProvider;
+    #[async_trait::async_trait]
+    impl reson_core::providers::MusicProvider for OptionalProvider {
+        fn info(&self) -> reson_core::providers::ProviderInfo {
+            reson_core::providers::ProviderInfo {
+                id: "optional".into(),
+                display_name: "Optional".into(),
+                capabilities: vec![],
+                mode: "guest".into(),
+            }
+        }
+    }
+    let mut registry = ProviderRegistry::default();
+    registry.register(std::sync::Arc::new(OptionalProvider));
+    assert!(matches!(
+        registry
+            .get("optional")
+            .unwrap()
+            .search("query", 0, tokio_util::sync::CancellationToken::new())
+            .await,
+        Err(reson_core::error::Error::Unsupported("search"))
+    ));
+}
+
+#[test]
+fn refreshing_one_provider_preserves_other_track_sources() {
+    let temp = tempfile::tempdir().unwrap();
+    let storage = Storage::open(&temp.path().join("state.sqlite")).unwrap();
+    let first = storage
+        .intern_tracks(vec![parse::track(&fixture()).unwrap()])
+        .unwrap()
+        .remove(0);
+    let mut matched = first.clone();
+    matched.sources.push(TrackSource {
+        provider: "future".into(),
+        provider_id: "alternate-source".into(),
+        availability: Availability::Playable,
+        url: None,
+    });
+    storage.intern_tracks(vec![matched]).unwrap();
+    let refreshed = storage
+        .intern_tracks(vec![parse::track(&fixture()).unwrap()])
+        .unwrap()
+        .remove(0);
+    assert_eq!(refreshed.internal_id, first.internal_id);
+    assert_eq!(refreshed.sources.len(), 2);
+    assert_eq!(
+        storage.track(first.internal_id).unwrap().sources[1].provider,
+        "future"
+    );
+}
+
+#[test]
+fn newer_database_schema_is_rejected_without_modifying_user_data() {
+    let temp = tempfile::tempdir().unwrap();
+    let path = temp.path().join("state.sqlite");
+    let conn = rusqlite::Connection::open(&path).unwrap();
+    conn.pragma_update(None, "user_version", 2).unwrap();
+    drop(conn);
+    assert!(Storage::open(&path).is_err());
+    let conn = rusqlite::Connection::open(path).unwrap();
+    assert_eq!(
+        conn.query_row::<i64, _, _>("PRAGMA user_version", [], |r| r.get(0))
+            .unwrap(),
+        2
+    );
 }

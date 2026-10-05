@@ -38,6 +38,9 @@ export function PlayerBar({
   const liked =
     !!t && lib.favorites.some((f) => f.internal_id === t.internal_id);
   useEffect(() => () => window.clearTimeout(volumeTimer.current), []);
+  useEffect(() => {
+    if (p.volume > 0) lastVolume.current = p.volume;
+  }, [p.volume]);
   const changeVolume = (value: number) => {
     setVolume(value);
     if (value > 0) lastVolume.current = value;

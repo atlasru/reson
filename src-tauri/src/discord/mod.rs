@@ -90,6 +90,7 @@ fn worker(receiver: std::sync::mpsc::Receiver<Message>) {
                             };
                             connection.set_activity(
                                 activity::Activity::new()
+                                    .activity_type(activity::ActivityType::Listening)
                                     .details(&details)
                                     .state(&artist)
                                     .timestamps(activity::Timestamps::new().start(start).end(end))

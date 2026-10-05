@@ -60,7 +60,7 @@ impl SoundCloudProvider {
                     parse::track(v).ok().or_else(|| {
                         parse::provider_id(v, "tracks")
                             .ok()
-                            .and_then(|id| hydrated.remove(&id))
+                            .and_then(|id| hydrated.get(&id).cloned())
                     })
                 })
                 .collect();
@@ -85,8 +85,16 @@ impl MusicProvider for SoundCloudProvider {
                 Capability::Artists,
                 Capability::Playlists,
                 Capability::Related,
+                Capability::Discovery,
+                Capability::UrlResolution,
             ],
         }
+    }
+    fn artwork_hosts(&self) -> &'static [&'static str] {
+        &["sndcdn.com"]
+    }
+    fn external_hosts(&self) -> &'static [&'static str] {
+        &["soundcloud.com"]
     }
     async fn search(
         &self,
@@ -125,7 +133,9 @@ impl MusicProvider for SoundCloudProvider {
                 .iter()
                 .filter_map(|v| parse::playlist(v).ok())
                 .collect(),
-            has_more: tracks["next_href"].is_string(),
+            has_more: tracks["next_href"].is_string()
+                || artists["next_href"].is_string()
+                || playlists["next_href"].is_string(),
         })
     }
     async fn track(&self, id: &str) -> Result<Track> {
@@ -209,7 +219,7 @@ impl MusicProvider for SoundCloudProvider {
                 .iter()
                 .filter_map(|v| parse::playlist(v).ok())
                 .collect(),
-            has_more: tracks["next_href"].is_string(),
+            has_more: tracks["next_href"].is_string() || playlists["next_href"].is_string(),
         })
     }
     async fn playlist(&self, id: &str) -> Result<Playlist> {

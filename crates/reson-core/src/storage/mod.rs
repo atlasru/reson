@@ -74,6 +74,8 @@ impl Storage {
             .map(|a| intern_artist(&tx, a))
             .collect::<Result<Vec<_>>>()?;
         tx.commit()?;
+        drop(conn);
+        self.cleanup_metadata()?;
         Ok(artists)
     }
     pub fn track(&self, id: Uuid) -> Result<Track> {
@@ -270,6 +272,7 @@ impl Storage {
     pub fn cleanup_metadata(&self) -> Result<()> {
         // Retain entities referenced by user data; cap the remaining normalized metadata.
         self.connection()?.execute("DELETE FROM tracks WHERE id NOT IN (SELECT track_id FROM favorites UNION SELECT track_id FROM history UNION SELECT track_id FROM playlist_tracks) AND id NOT IN (SELECT id FROM tracks ORDER BY cached_at DESC LIMIT 10000) AND id NOT IN (SELECT json_extract(j.value,'$.track.internal_id') FROM json_each((SELECT json FROM queue WHERE singleton=1),'$.entries') j)",[])?;
+        self.connection()?.execute("DELETE FROM artists WHERE id NOT IN (SELECT id FROM artists ORDER BY rowid DESC LIMIT 10000) AND id NOT IN (SELECT json_extract(a.value,'$.internal_id') FROM tracks t,json_each(t.json,'$.artists') a)",[])?;
         Ok(())
     }
 }

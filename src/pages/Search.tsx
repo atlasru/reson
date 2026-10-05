@@ -11,22 +11,33 @@ import type {
 import { TrackList } from "../components/TrackList";
 import { ArtistCards, PlaylistCards } from "../components/Cards";
 import { Empty, Failure, Skeleton } from "../components/States";
+type SearchTab = "tracks" | "artists" | "playlists";
+type SearchSession = {
+  query: string;
+  tab: SearchTab;
+  data: SearchResults;
+  offset: number;
+};
+// Navigation memory only; queries are never persisted or sent to a Reson service.
+const sessions = new Map<string, SearchSession>();
 export function Search({ navigate }: { navigate: (r: Route) => void }) {
-  const [query, setQuery] = useState("");
-  const [tab, setTab] = useState<"tracks" | "artists" | "playlists">("tracks");
-  const [data, setData] = useState<SearchResults | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [retry, setRetry] = useState(0);
-  const [offset, setOffset] = useState(0);
-  const input = useRef<HTMLInputElement>(null);
-  const active = useRef("");
   const available = useProviders();
   const selectedSource = useSelectedProvider();
   const provider =
     selectedSource ??
     available.find((p) => p.capabilities.includes("search"))?.id ??
-    "soundcloud";
+    "";
+  const initial = sessions.get(provider);
+  const [query, setQuery] = useState(initial?.query ?? "");
+  const [tab, setTab] = useState<SearchTab>(initial?.tab ?? "tracks");
+  const [data, setData] = useState<SearchResults | null>(initial?.data ?? null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [retry, setRetry] = useState(0);
+  const [offset, setOffset] = useState(initial?.offset ?? 0);
+  const resultQuery = useRef(initial?.query ?? "");
+  const input = useRef<HTMLInputElement>(null);
+  const active = useRef("");
   useEffect(
     () => () => {
       if (active.current)
@@ -45,6 +56,14 @@ export function Search({ navigate }: { navigate: (r: Route) => void }) {
   useEffect(() => {
     const q = query.trim();
     setError("");
+    const cached = sessions.get(provider);
+    if (cached?.query === q && retry === 0) {
+      setData(cached.data);
+      setOffset(cached.offset);
+      setLoading(false);
+      return;
+    }
+    resultQuery.current = "";
     setData(null);
     setOffset(0);
     if (!q) {
@@ -94,6 +113,7 @@ export function Search({ navigate }: { navigate: (r: Route) => void }) {
       })
         .then((r) => {
           if (active.current === id) {
+            resultQuery.current = q;
             setData(r);
             setLoading(false);
           }
@@ -111,6 +131,12 @@ export function Search({ navigate }: { navigate: (r: Route) => void }) {
       void call("cancel_request", { requestId: id }).catch(() => {});
     };
   }, [query, provider, retry, navigate]);
+  useEffect(() => {
+    if (!data || resultQuery.current !== query.trim()) return;
+    sessions.delete(provider);
+    sessions.set(provider, { query: query.trim(), tab, data, offset });
+    if (sessions.size > 8) sessions.delete(sessions.keys().next().value!);
+  }, [data, query, tab, offset, provider]);
   const more = async () => {
     if (loading) return;
     setLoading(true);
@@ -124,6 +150,7 @@ export function Search({ navigate }: { navigate: (r: Route) => void }) {
         offset: next,
         requestId: id,
       });
+      if (active.current !== id) return;
       setData((old) =>
         old
           ? {
@@ -136,9 +163,9 @@ export function Search({ navigate }: { navigate: (r: Route) => void }) {
       );
       setOffset(next);
     } catch (e) {
-      setError(String(e));
+      if (active.current === id) setError(String(e));
     } finally {
-      setLoading(false);
+      if (active.current === id) setLoading(false);
     }
   };
   return (
@@ -155,7 +182,7 @@ export function Search({ navigate }: { navigate: (r: Route) => void }) {
           ref={input}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Tracks, artists, playlists or a SoundCloud link"
+          placeholder="Tracks, artists, playlists or a source link"
           aria-label="Search music"
         />
         {query && (
@@ -188,7 +215,7 @@ export function Search({ navigate }: { navigate: (r: Route) => void }) {
       ) : !data ? (
         <Empty
           title="Find your next listen"
-          detail="Search SoundCloud’s public catalog. No account required."
+          detail="Search the selected source’s public catalog."
         />
       ) : tab === "tracks" ? (
         <TrackList tracks={data.tracks} navigate={navigate} />

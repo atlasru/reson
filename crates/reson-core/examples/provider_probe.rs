@@ -35,7 +35,7 @@ async fn main() -> Result<()> {
     let timeout = tokio::time::sleep(std::time::Duration::from_secs(120));
     tokio::pin!(timeout);
     loop {
-        tokio::select! { _=&mut timeout=>{println!("Probe timeout");break;}, Some(e)=events.recv()=>match e {AudioEvent::Loaded=>println!("Native file loaded"),AudioEvent::Position(p) if p>3000=>{println!("Native position {p}ms");break;},AudioEvent::Error(e)=>{println!("Native error: {e}");break;},_=>{}} }
+        tokio::select! { _=&mut timeout=>{println!("Probe timeout");break;}, Some(e)=events.recv()=>match e {AudioEvent::Loaded=>println!("Native file loaded"),AudioEvent::Ended=>{println!("Native decoder reached EOF");break;},AudioEvent::Position(p) if p>3000=>{println!("Native position {p}ms");break;},AudioEvent::Error(e)=>{println!("Native error: {e}");break;},_=>{}} }
     }
     audio.send(AudioCommand::Stop)?;
     audio.send(AudioCommand::Shutdown)?;

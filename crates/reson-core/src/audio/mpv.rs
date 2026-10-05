@@ -2,7 +2,7 @@ use super::*;
 use crate::error::Error;
 use libloading::Library;
 use std::{
-    ffi::{c_char, c_int, c_void, CStr, CString},
+    ffi::{c_char, c_int, c_ulong, c_void, CStr, CString},
     sync::mpsc as sync_mpsc,
     time::{Duration, Instant},
 };
@@ -92,7 +92,7 @@ impl Api {
                     "Native audio library missing. Reinstall Reson (Linux: install libmpv).".into(),
                 )
             })?;
-        let version: unsafe extern "C" fn() -> u64 = *library
+        let version: unsafe extern "C" fn() -> c_ulong = *library
             .get(b"mpv_client_api_version\0")
             .map_err(|_| Error::Audio("Invalid native audio library".into()))?;
         if version() >> 16 != 2 {

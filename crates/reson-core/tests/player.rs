@@ -52,14 +52,17 @@ struct Audio {
     events: mpsc::UnboundedSender<AudioEvent>,
     loads: Arc<AtomicUsize>,
     volume: Mutex<f64>,
+    auto_load: bool,
 }
 impl AudioBackend for Audio {
     fn send(&self, c: AudioCommand) -> Result<()> {
         match c {
             AudioCommand::Load { position_ms, .. } => {
                 self.loads.fetch_add(1, Ordering::Relaxed);
-                let _ = self.events.send(AudioEvent::Loaded);
-                let _ = self.events.send(AudioEvent::Position(position_ms));
+                if self.auto_load {
+                    let _ = self.events.send(AudioEvent::Loaded);
+                    let _ = self.events.send(AudioEvent::Position(position_ms));
+                }
             }
             AudioCommand::Pause(p) => {
                 let _ = self.events.send(AudioEvent::Paused(p));
@@ -95,6 +98,17 @@ async fn setup() -> (
     Arc<AtomicUsize>,
     Arc<AtomicUsize>,
 ) {
+    setup_with_loading(true).await
+}
+async fn setup_with_loading(
+    auto_load: bool,
+) -> (
+    tempfile::TempDir,
+    Player,
+    mpsc::UnboundedSender<AudioEvent>,
+    Arc<AtomicUsize>,
+    Arc<AtomicUsize>,
+) {
     let temp = tempfile::tempdir().unwrap();
     let storage = Storage::open(&temp.path().join("state.sqlite")).unwrap();
     let calls = Arc::new(AtomicUsize::new(0));
@@ -108,9 +122,40 @@ async fn setup() -> (
         events: tx.clone(),
         loads: loads.clone(),
         volume: Mutex::new(1.),
+        auto_load,
     });
     let player = Player::start(storage, registry, audio, rx).unwrap();
     (temp, player, tx, calls, loads)
+}
+
+#[tokio::test]
+async fn pausing_during_load_accepts_late_native_ready_event() {
+    let (temp, player, events, _, loads) = setup_with_loading(false).await;
+    let storage = Storage::open(&temp.path().join("state.sqlite")).unwrap();
+    let tracks = storage.intern_tracks(vec![track("late-ready")]).unwrap();
+    player
+        .command(PlayerCommand::Play { tracks, index: 0 })
+        .await
+        .unwrap();
+    let mut states = player.state.clone();
+    tokio::time::timeout(std::time::Duration::from_secs(2), async {
+        while loads.load(Ordering::Relaxed) == 0 {
+            states.changed().await.unwrap();
+        }
+    })
+    .await
+    .unwrap();
+    player.command(PlayerCommand::Pause).await.unwrap();
+    events.send(AudioEvent::Loaded).unwrap();
+    wait(&player, PlaybackStatus::Paused).await;
+    player.command(PlayerCommand::Resume).await.unwrap();
+    wait(&player, PlaybackStatus::Playing).await;
+    assert_eq!(
+        loads.load(Ordering::Relaxed),
+        1,
+        "Resume must reuse the native stream loaded while paused"
+    );
+    player.command(PlayerCommand::Shutdown).await.unwrap();
 }
 async fn wait(player: &Player, status: PlaybackStatus) {
     let mut state = player.state.clone();

@@ -34,7 +34,7 @@ export function Artwork({
           if (alive) setSrc(value);
         })
         .catch(() => {
-          if (alive) setSrc(url);
+          if (alive) setSrc(null);
         });
     }
     return () => {
@@ -49,7 +49,10 @@ export function Artwork({
           alt=""
           loading="lazy"
           draggable={false}
-          onError={() => setSrc(null)}
+          onError={() => {
+            if (url) resolved.delete(url);
+            setSrc(null);
+          }}
         />
       ) : (
         <Music2 size={23} />

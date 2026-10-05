@@ -334,17 +334,15 @@ pub async fn audio_devices(state: State<'_, AppState>) -> Result<Vec<AudioDevice
         .map_err(|_| Error::Audio("Device enumeration interrupted".into()))?
 }
 #[tauri::command]
-pub fn open_external(url: String) -> Result<()> {
+pub fn open_external(state: State<'_, AppState>, url: String) -> Result<()> {
     let u = url::Url::parse(&url).map_err(|_| Error::Invalid("Invalid external link".into()))?;
-    if u.scheme() != "https"
-        || !matches!(
-            u.host_str(),
-            Some("soundcloud.com" | "www.soundcloud.com" | "github.com")
-        )
-        || !u.username().is_empty()
-        || u.password().is_some()
-        || u.port().is_some_and(|p| p != 443)
-    {
+    let repository = u.scheme() == "https"
+        && u.host_str() == Some("github.com")
+        && u.path() == "/atlasru/reson"
+        && u.username().is_empty()
+        && u.password().is_none()
+        && u.port().is_none_or(|p| p == 443);
+    if !repository && !state.providers.allows_external_url(&u) {
         return Err(Error::Invalid("Unsupported external link".into()));
     }
     open::that_detached(url).map_err(|_| Error::Invalid("Cannot open the system browser".into()))

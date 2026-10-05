@@ -8,6 +8,11 @@ access.** Windows 10/11 x64 · MIT application code.
 [SoundCloud integration](docs/SOUNDCLOUD.md) ·
 [Architecture](docs/ARCHITECTURE.md) · [Roadmap](docs/ROADMAP.md)
 
+![Reson playing a real SoundCloud search result](docs/images/reson-search.png)
+
+Actual native application capture with real SoundCloud results and native
+audio playback. [Queue screenshot](docs/images/reson-queue.png).
+
 ## Install
 
 Download `Reson_0.1.0_x64-setup.exe` from Releases and run it. The per-user
@@ -141,7 +146,8 @@ tests real SoundCloud decoding from both portable and freshly installed builds.
 Find artifacts on a **successful** Actions run; a failed run is not a validated
 release. Physical Windows speakers/media overlays require desktop testing.
 
-Tests cover normalized parsing/availability, malformed input, provider
+Tests cover normalized parsing/availability, malformed/oversized HTTP input,
+request cancellation and rate limits, optional provider
 capabilities, queue operations/repeat/shuffle, source refresh, network failure,
 SQLite migration/reopen, cache limits, configuration and player gestures.
 

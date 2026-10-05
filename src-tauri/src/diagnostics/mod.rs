@@ -1,5 +1,6 @@
 use reson_core::error::Result;
 use std::path::Path;
+use tokio::io::{AsyncReadExt, AsyncSeekExt};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 pub fn initialize(dir: &Path) -> Result<tracing_appender::non_blocking::WorkerGuard> {
     std::fs::create_dir_all(dir)?;
@@ -44,9 +45,17 @@ pub async fn export(logs: &Path, data_dir: &Path, audio_error: Option<String>) -
         if !file.file_type().await?.is_file() {
             continue;
         }
-        let body = tokio::fs::read(file.path()).await?;
-        let body = &body[body.len().saturating_sub(remaining.min(256000))..];
-        report.push_str(&String::from_utf8_lossy(body));
+        let limit = remaining.min(256000);
+        let mut source = tokio::fs::File::open(file.path()).await?;
+        let length = source.metadata().await?.len();
+        source
+            .seek(std::io::SeekFrom::Start(
+                length.saturating_sub(limit as u64),
+            ))
+            .await?;
+        let mut body = Vec::with_capacity(limit);
+        source.take(limit as u64).read_to_end(&mut body).await?;
+        report.push_str(&String::from_utf8_lossy(&body));
         remaining = remaining.saturating_sub(body.len());
         if remaining == 0 {
             break;

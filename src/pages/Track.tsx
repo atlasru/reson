@@ -7,6 +7,7 @@ import {
   original,
   play,
   useLibrary,
+  useProviders,
 } from "../stores/core";
 import type { Route, Track } from "../stores/types";
 import { Artwork } from "../components/Artwork";
@@ -25,11 +26,17 @@ export function TrackView({
   const [error, setError] = useState("");
   const [retry, setRetry] = useState(0);
   const ref = track.sources[0];
+  const provider = useProviders().find((p) => p.id === ref.provider);
+  const canRelate = !!provider?.capabilities.includes("related");
   const liked = lib.favorites.some((t) => t.internal_id === track.internal_id);
   useEffect(() => {
     let alive = true;
     setLoading(true);
     setError("");
+    if (!canRelate) {
+      setLoading(false);
+      return;
+    }
     void call<Track[]>("related_tracks", {
       provider: ref.provider,
       id: ref.provider_id,
@@ -46,7 +53,7 @@ export function TrackView({
     return () => {
       alive = false;
     };
-  }, [ref.provider, ref.provider_id, retry]);
+  }, [ref.provider, ref.provider_id, retry, canRelate]);
   return (
     <div className="page">
       <header className="entity-header">
@@ -98,16 +105,20 @@ export function TrackView({
           </div>
         </div>
       </header>
-      <div className="section-title">
-        <h2>Related tracks</h2>
-        <span>SoundCloud</span>
-      </div>
-      {loading ? (
-        <Skeleton />
-      ) : error ? (
-        <Failure message={error} retry={() => setRetry((n) => n + 1)} />
-      ) : (
-        <TrackList tracks={related} navigate={navigate} />
+      {canRelate && (
+        <>
+          <div className="section-title">
+            <h2>Related tracks</h2>
+            <span>{provider?.display_name}</span>
+          </div>
+          {loading ? (
+            <Skeleton />
+          ) : error ? (
+            <Failure message={error} retry={() => setRetry((n) => n + 1)} />
+          ) : (
+            <TrackList tracks={related} navigate={navigate} />
+          )}
+        </>
       )}
     </div>
   );

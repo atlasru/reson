@@ -72,6 +72,7 @@ fn main() {
             let cache = ArtworkCache::new(
                 app.path().app_cache_dir()?.join("artwork"),
                 settings.cache_limit_mb,
+                providers.artwork_hosts(),
             )?;
             let state = AppState {
                 storage: storage.clone(),

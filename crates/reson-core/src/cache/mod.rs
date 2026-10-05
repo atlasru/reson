@@ -4,17 +4,20 @@ use std::{
     path::{Path, PathBuf},
     time::Duration,
 };
-use tokio::sync::Mutex;
+use tokio::sync::{Mutex, Semaphore};
 
 pub struct ArtworkCache {
     root: PathBuf,
     client: reqwest::Client,
     lock: Mutex<()>,
+    downloads: Semaphore,
+    hosts: Vec<String>,
     limit: std::sync::atomic::AtomicU64,
 }
 impl ArtworkCache {
-    pub fn new(root: PathBuf, limit_mb: u64) -> Result<Self> {
+    pub fn new(root: PathBuf, limit_mb: u64, hosts: Vec<String>) -> Result<Self> {
         std::fs::create_dir_all(&root)?;
+        cleanup(&root, limit_mb * 1024 * 1024)?;
         let client = reqwest::Client::builder()
             .timeout(Duration::from_secs(20))
             .redirect(reqwest::redirect::Policy::none())
@@ -24,13 +27,19 @@ impl ArtworkCache {
             root,
             client,
             lock: Mutex::new(()),
+            downloads: Semaphore::new(4),
+            hosts,
             limit: std::sync::atomic::AtomicU64::new(limit_mb * 1024 * 1024),
         })
     }
     pub async fn get(&self, raw: &str) -> Result<PathBuf> {
         let url = url::Url::parse(raw).map_err(|_| Error::Malformed)?;
         if url.scheme() != "https"
-            || !url.host_str().is_some_and(|h| h.ends_with(".sndcdn.com"))
+            || !url.host_str().is_some_and(|host| {
+                self.hosts
+                    .iter()
+                    .any(|h| host == h || host.ends_with(&format!(".{h}")))
+            })
             || !url.username().is_empty()
             || url.password().is_some()
             || url.port().is_some_and(|p| p != 443)
@@ -39,12 +48,19 @@ impl ArtworkCache {
         }
         let key = format!("{:x}", Sha256::digest(raw.as_bytes()));
         let path = self.root.join(format!("{key}.jpg"));
-        let _guard = self.lock.lock().await;
-        if path.exists() {
-            let metadata = tokio::fs::metadata(&path).await?;
-            if metadata.len() > 0 {
-                touch(&path)?;
-                return Ok(path);
+        let _permit = self
+            .downloads
+            .acquire()
+            .await
+            .map_err(|_| Error::Cancelled)?;
+        {
+            let _guard = self.lock.lock().await;
+            if path.exists() {
+                let metadata = tokio::fs::metadata(&path).await?;
+                if metadata.len() > 0 {
+                    touch(&path)?;
+                    return Ok(path);
+                }
             }
         }
         let mut response = self
@@ -79,6 +95,10 @@ impl ArtworkCache {
             || (body.starts_with(b"RIFF") && body.get(8..12) == Some(b"WEBP"));
         if !valid {
             return Err(Error::Malformed);
+        }
+        let _guard = self.lock.lock().await;
+        if path.exists() {
+            return Ok(path);
         }
         cleanup(
             &self.root,
