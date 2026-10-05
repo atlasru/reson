@@ -99,7 +99,8 @@ module and registration. See [the detailed design](docs/ARCHITECTURE.md).
 
 ## Development
 
-Prerequisites: Node.js 22/npm, Rust 1.99.0 (pinned), Git. On Windows install
+Prerequisites: Node.js 22/npm, Rust 1.99.0 (pinned), Git and Python 3 for license
+collection. On Windows install
 Visual Studio Build Tools with **Desktop development with C++**, Windows SDK,
 WebView2 and 7-Zip. PowerShell downloads and verifies a pinned LGPL libmpv
 archive; no SoundCloud secret or `.env` is required.
@@ -135,6 +136,7 @@ Core-only tests need neither a webview nor an audio device:
 
 ```powershell
 pwsh -File scripts/prepare-audio.ps1
+python scripts/collect-notices.py
 npm run tauri -- build --target x86_64-pc-windows-msvc --bundles nsis
 ```
 
@@ -150,6 +152,9 @@ Tests cover normalized parsing/availability, malformed/oversized HTTP input,
 request cancellation and rate limits, optional provider
 capabilities, queue operations/repeat/shuffle, source refresh, network failure,
 SQLite migration/reopen, cache limits, configuration and player gestures.
+
+See [recorded real playback and restart validation](docs/VALIDATION.md) and
+`scripts/validate-desktop.py` for repeatable native UI checks.
 
 ## Contributing
 

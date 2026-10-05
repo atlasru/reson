@@ -333,6 +333,7 @@ impl Actor {
         if self.loaded {
             self.audio.send(AudioCommand::Pause(false))?;
             self.state.status = PlaybackStatus::Playing;
+            self.record_history();
         } else {
             self.failed = 0;
             self.begin(self.state.position_ms, true, false)?;
@@ -434,15 +435,7 @@ impl Actor {
                 } else {
                     PlaybackStatus::Paused
                 };
-                if self.want_play && !self.history_recorded {
-                    if let Some(track) = &self.state.current {
-                        if let Err(e) = self.storage.record_play(track.internal_id) {
-                            tracing::error!(error=%e,"history persistence failed");
-                        } else {
-                            self.history_recorded = true;
-                        }
-                    }
-                }
+                self.record_history();
             }
             AudioEvent::Position(position) if self.loaded => {
                 self.state.position_ms = position.min(self.state.duration_ms.max(position));
@@ -529,6 +522,17 @@ impl Actor {
     }
     fn publish(&self) {
         self.state_tx.send_replace(self.state.clone());
+    }
+    fn record_history(&mut self) {
+        if self.want_play && !self.history_recorded {
+            if let Some(track) = &self.state.current {
+                if let Err(error) = self.storage.record_play(track.internal_id) {
+                    tracing::error!(%error,"history persistence failed");
+                } else {
+                    self.history_recorded = true;
+                }
+            }
+        }
     }
     fn save(&mut self) -> Result<()> {
         self.storage

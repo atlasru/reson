@@ -155,6 +155,7 @@ async fn pausing_during_load_accepts_late_native_ready_event() {
         1,
         "Resume must reuse the native stream loaded while paused"
     );
+    assert_eq!(storage.history().unwrap()[0].title, "late-ready");
     player.command(PlayerCommand::Shutdown).await.unwrap();
 }
 async fn wait(player: &Player, status: PlaybackStatus) {

@@ -4,11 +4,12 @@ on:
     branches: [main, 'feature/**']
     tags: ['v*']
   pull_request:
+    types: [opened, reopened, synchronize]
   workflow_dispatch:
 permissions:
   contents: read
 concurrency:
-  group: reson-${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  group: reson-${{ github.workflow }}-${{ github.event_name }}-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 jobs:
   frontend:
@@ -118,3 +119,22 @@ jobs:
             smoke-error.txt
             installed-smoke.txt
             installed-smoke-error.txt
+  release:
+    needs: [frontend, core, windows]
+    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'push' && startsWith(github.event.head_commit.message, 'release:'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: Reson-windows-x64
+          path: release-files
+      - name: Verify and publish v0.1.0
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd release-files
+          sha256sum --check SHA256SUMS.txt
+          gh release create v0.1.0 Reson_0.1.0_x64-setup.exe Reson_0.1.0_windows_x64_portable.zip SHA256SUMS.txt --target "$GITHUB_SHA" --title 'Reson v0.1.0' --notes-file ../docs/RELEASE_NOTES.md

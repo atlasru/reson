@@ -30,6 +30,37 @@ authoritative Rust snapshots over the normal application IPC.
 Separate native decoding validated 4,194,304 inspected float PCM samples,
 RMS 0.065142, peak 0.714613 from the refreshed SoundCloud HLS source.
 
+## Production bundle and Windows
+
+The standalone Linux production bundle was built and run without a Vite/dev
+server. Real artist tracks and a hydrated SoundCloud playlist rendered; Back
+retained the search query/results. A nonexistent public SoundCloud link
+returned a recoverable unavailability error. Playback, controls and queue
+editing passed again with 575,098 captured output samples (RMS 0.022084).
+A separately launched production process restored the 29-entry queue, local
+library, volume 0.3 and position 30,000 ms, then refreshed the source and resumed.
+
+The final production rerun with `scripts/validate-desktop.py` passed all 27
+functional checks, including two sessions in the same WebDriver setup. It
+captured 569,280 output-device PCM samples (RMS 0.022049, peak 0.160746), verified
+that changing the cache setting preserves playback volume, and resumed a fresh
+stream after restarting. The README captures come from this production run.
+
+The production bundle was also launched with a deliberately unreachable HTTP
+proxy. Real network I/O failed: the player showed a useful error, retained the
+queue, and local favorites/playlist edits remained functional. Search failed
+gracefully and the application stayed responsive.
+
+[Windows validation run 37285650816](https://github.com/atlasru/reson/actions/runs/37285650816)
+completed successfully. Both portable and freshly installed Windows executables
+produced 4,194,304 inspected PCM samples, RMS 0.065142, peak 0.714613 from actual
+SoundCloud AAC HLS. The release pipeline repeats these checks on the
+release commit before publishing its artifacts.
+
+Tracked source and native release output were scanned for hardcoded access
+tokens/client secrets, GitHub credential patterns and private-key blocks; no
+credentials were found. Transient URLs remain runtime memory only.
+
 ## Automated verification
 
 Core tests exercise malformed/oversized provider input, cancellation, rate
@@ -37,6 +68,17 @@ cooldowns, large URNs, normalized identities, multi-source preservation,
 unavailable content, source refresh, outage behavior, loading/pause races,
 queue ordering/shuffle/repeat, configuration, artwork eviction and SQLite
 migration/reopen. Frontend tests verify seek gestures and real control IPC.
+
+25 core tests and 3 frontend tests pass. The frontend regression test also
+guards volume preservation when subsequent Settings changes are submitted.
+
+To repeat desktop checks, start `tauri-driver` in a fresh profile and run
+`python scripts/validate-desktop.py --application /absolute/path/to/reson`.
+Linux output-device capture can be included with
+`--capture-device reson_test.monitor` and a configured PulseAudio server.
+Screenshots/reports go to the selected `--output` directory. The full two-session
+check requires a WebDriver/display setup that remains alive across app exits;
+headless Xvfb should use `-noreset`.
 
 Windows Actions checks the full workspace, produces x64 installer/portable
 builds, validates the portable DLL against live SoundCloud, performs a fresh

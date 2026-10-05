@@ -9,6 +9,14 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "src-tauri/resources/licenses/DEPENDENCIES.txt"
 notices = {}
 missing = []
+fallbacks = {
+    "alloc-stdlib": "alloc-stdlib-BSD.txt",
+    "defmt-parser": "defmt-MIT.txt",
+    "selectors": "MPL-2.0.txt",
+    "webview2-com": "webview2-MIT.txt",
+    "webview2-com-macros": "webview2-MIT.txt",
+    "webview2-com-sys": "webview2-MIT.txt",
+}
 
 
 def collect(name, root, declared):
@@ -31,7 +39,15 @@ def collect(name, root, declared):
         group = notices.setdefault(key, {"text": text, "packages": set()})
         group["packages"].add(f"{name} ({declared})")
     if not found:
-        missing.append(f"{name} ({declared})")
+        parts = name.split()
+        fallback = fallbacks.get(parts[1]) if len(parts)>1 else None
+        if fallback and (OUTPUT.parent / fallback).is_file():
+            text = (OUTPUT.parent / fallback).read_text(encoding="utf-8").strip()
+            key = hashlib.sha256(text.encode()).hexdigest()
+            group = notices.setdefault(key, {"text":text,"packages":set()})
+            group["packages"].add(f"{name} ({declared}; upstream workspace license)")
+        else:
+            missing.append(f"{name} ({declared})")
 
 
 metadata = json.loads(subprocess.check_output([

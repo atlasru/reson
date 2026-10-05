@@ -93,7 +93,13 @@ export async function refreshLibrary() {
 }
 export async function initialize() {
   const unlisten = await Promise.all([
-    listen<PlayerState>("player-state", (e) => player.set(e.payload)),
+    listen<PlayerState>("player-state", (e) => {
+      player.set(e.payload);
+      const current = settings.get();
+      if (current.volume !== e.payload.volume) {
+        settings.set({ ...current, volume: e.payload.volume });
+      }
+    }),
     listen<Queue>("queue-state", (e) => queue.set(e.payload)),
     listen<Library>("library-state", (e) => library.set(e.payload)),
     listen<Settings>("settings-state", (e) => settings.set(e.payload)),

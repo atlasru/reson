@@ -4,7 +4,7 @@ use serde::Serialize;
 pub enum Error {
     #[error("Network request failed. Check your connection and try again.")]
     Network,
-    #[error("SoundCloud is rate limiting requests. Try again in {0} seconds.")]
+    #[error("The music provider is rate limiting requests. Try again in {0} seconds.")]
     RateLimited(u64),
     #[error("This content is unavailable in your region or has been removed.")]
     Unavailable,

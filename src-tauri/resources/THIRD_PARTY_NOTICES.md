@@ -21,3 +21,9 @@ engineering for debugging modifications to the LGPL components.
 React (MIT), Tauri (MIT/Apache-2.0), Tokio (MIT), reqwest (MIT/Apache-2.0),
 SQLite (public domain), rusqlite (MIT), libloading (ISC), lucide (ISC).
 The pinned Cargo.lock/package-lock.json identify all dependencies.
+
+`licenses/DEPENDENCIES.txt` is generated from the locked Rust/npm dependencies
+at build time and includes their upstream copyright and license notices.
+Workspace license files omitted by some crate packages are supplied alongside
+it. The unmodified MPL components' source is available in the locked crates
+and upstream repositories, including https://github.com/servo/stylo.
