@@ -1,0 +1,98 @@
+name: Build and validate Reson
+on:
+  push:
+    branches: [main, 'feature/**']
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: reson-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+  core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: '1.99.0'
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo fmt --all --check
+      - run: cargo clippy -p reson-core --all-targets --locked -- -D warnings
+      - run: cargo test -p reson-core --locked
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: '1.99.0'
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: npm ci
+      - run: pwsh -File scripts/prepare-audio.ps1
+      - run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - run: cargo test --workspace --locked
+      - run: npm run tauri -- build --target x86_64-pc-windows-msvc --bundles nsis
+      - name: Assemble portable build
+        shell: pwsh
+        run: |
+          $out = 'target/x86_64-pc-windows-msvc/release'
+          New-Item -ItemType Directory -Force portable | Out-Null
+          Copy-Item "$out/reson.exe" portable/Reson.exe
+          Copy-Item src-tauri/resources/libmpv-2.dll portable/
+          Copy-Item src-tauri/resources/THIRD_PARTY_NOTICES.md portable/
+          Copy-Item src-tauri/resources/licenses portable/ -Recurse
+          Copy-Item LICENSE portable/
+          Compress-Archive -Path portable/* -DestinationPath Reson_0.1.0_windows_x64_portable.zip
+          Copy-Item (Get-ChildItem "$out/bundle/nsis/*setup.exe" | Select-Object -First 1).FullName Reson_0.1.0_x64-setup.exe
+          Get-FileHash Reson_0.1.0_windows_x64_portable.zip,Reson_0.1.0_x64-setup.exe -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLowerInvariant())  $(Split-Path $_.Path -Leaf)" } | Set-Content SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Reson-windows-x64
+          path: |
+            Reson_0.1.0_x64-setup.exe
+            Reson_0.1.0_windows_x64_portable.zip
+            SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 30
+      - name: Native DLL smoke test with real SoundCloud
+        shell: pwsh
+        run: |
+          $process = Start-Process -FilePath "$PWD/portable/Reson.exe" -ArgumentList '--smoke' -Wait -PassThru -RedirectStandardOutput smoke.txt -RedirectStandardError smoke-error.txt
+          Get-Content smoke.txt
+          Get-Content smoke-error.txt
+          if ($process.ExitCode -ne 0) { throw "Native SoundCloud smoke test failed: $($process.ExitCode)" }
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Reson-validation
+          path: |
+            smoke.txt
+            smoke-error.txt
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: gh release create ${{ github.ref_name }} Reson_0.1.0_x64-setup.exe Reson_0.1.0_windows_x64_portable.zip SHA256SUMS.txt --title 'Reson v0.1.0' --notes-file docs/RELEASE_NOTES.md --verify-tag
