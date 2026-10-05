@@ -11,7 +11,14 @@ use reson_core::{
     storage::{Installation, Storage},
 };
 use serde::Serialize;
-use std::{collections::HashMap, path::PathBuf, sync::Arc};
+use std::{
+    collections::HashMap,
+    path::PathBuf,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
+};
 use tauri::{Emitter, State};
 use tokio::sync::Mutex;
 use tokio_util::sync::CancellationToken;
@@ -27,6 +34,7 @@ pub struct AppState {
     pub audio_error: Option<String>,
     pub logs: PathBuf,
     pub data_dir: PathBuf,
+    pub frontend_connected: AtomicBool,
 }
 #[derive(Serialize)]
 pub struct Snapshot {
@@ -40,7 +48,7 @@ pub struct Snapshot {
 }
 #[tauri::command]
 pub fn bootstrap(state: State<'_, AppState>) -> Result<Snapshot> {
-    Ok(Snapshot {
+    let snapshot = Snapshot {
         player: state.player.state.borrow().clone(),
         queue: state.player.queue.borrow().clone(),
         library: Library::load(&state.storage)?,
@@ -48,7 +56,11 @@ pub fn bootstrap(state: State<'_, AppState>) -> Result<Snapshot> {
         providers: state.providers.list(),
         installation: state.storage.installation()?,
         audio_error: state.audio_error.clone(),
-    })
+    };
+    if !state.frontend_connected.swap(true, Ordering::Relaxed) {
+        tracing::info!("Desktop UI connected");
+    }
+    Ok(snapshot)
 }
 #[tauri::command]
 pub async fn search(

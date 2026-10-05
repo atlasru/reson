@@ -84,6 +84,7 @@ fn main() {
                 audio_error,
                 logs,
                 data_dir,
+                frontend_connected: Default::default(),
             };
             app.manage(state);
             let mut snapshots = player.state.clone();

@@ -110,6 +110,35 @@ jobs:
           Get-Content installed-smoke.txt
           Get-Content installed-smoke-error.txt
           if ($process.ExitCode -ne 0) { throw "Installed native playback failed: $($process.ExitCode)" }
+      - name: Installed desktop startup and clean window exit
+        shell: pwsh
+        run: |
+          $appPath = Join-Path $env:RUNNER_TEMP 'reson-install/reson.exe'
+          $logDirs = @(
+            (Join-Path $env:LOCALAPPDATA 'dev.atlas.reson/logs'),
+            (Join-Path $env:APPDATA 'dev.atlas.reson/logs')
+          )
+          $app = Start-Process -FilePath $appPath -PassThru
+          try {
+            $ready = $false
+            for ($attempt = 0; $attempt -lt 120; $attempt++) {
+              $app.Refresh()
+              if ($app.HasExited) { throw "Desktop exited during startup: $($app.ExitCode)" }
+              $logFiles = @($logDirs | Where-Object { Test-Path $_ } | ForEach-Object { Get-ChildItem $_ -Filter '*.jsonl' })
+              $connected = @($logFiles | Select-String -SimpleMatch 'Desktop UI connected').Count -gt 0
+              if ($app.MainWindowHandle -ne 0 -and $connected) { $ready = $true; break }
+              Start-Sleep -Milliseconds 500
+            }
+            if (-not $ready) { throw 'Installed desktop window/frontend did not initialize' }
+            if (@($logFiles | Select-String -SimpleMatch 'native audio initialization failed').Count -gt 0) { throw 'Desktop native audio initialization failed' }
+            'Installed native window and React/core IPC initialized.' | Tee-Object desktop-startup.txt
+            if (-not $app.CloseMainWindow()) { throw 'Could not close the desktop window' }
+            if (-not $app.WaitForExit(15000)) { throw 'Closing the window left the application running' }
+            if ($app.ExitCode -ne 0) { throw "Desktop exit failed: $($app.ExitCode)" }
+            'Closing the desktop window exited normally.' | Tee-Object -Append desktop-startup.txt
+          } finally {
+            if (-not $app.HasExited) { Stop-Process -Id $app.Id -Force }
+          }
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -119,6 +148,7 @@ jobs:
             smoke-error.txt
             installed-smoke.txt
             installed-smoke-error.txt
+            desktop-startup.txt
   release:
     needs: [frontend, core, windows]
     if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'push' && startsWith(github.event.head_commit.message, 'release:'))

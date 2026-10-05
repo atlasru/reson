@@ -83,6 +83,10 @@ headless Xvfb should use `-noreset`.
 Windows Actions checks the full workspace, produces x64 installer/portable
 builds, validates the portable DLL against live SoundCloud, performs a fresh
 silent installation and repeats native decoding from the installed executable.
+It then starts the installed application normally, waits for its native window
+and the frontend's successful core bootstrap, and verifies that closing the
+window exits the process. A single local startup log records this connection;
+it contains no library or account data.
 CI status and artifacts are linked from the release/PR. An in-progress or failed
 run is never described as successful.
 
