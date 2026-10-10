@@ -81,18 +81,22 @@ export function ImportDialog({
   const status = progress?.status;
   const heading =
     status === "complete"
-      ? "Import complete"
+      ? progress?.discovered === 0
+        ? "No public liked tracks found"
+        : "Import complete"
       : status === "partial"
         ? "Partial import"
         : status === "cancelled"
           ? "Import cancelled"
           : status === "failed"
             ? "Import failed"
-            : status === "cooldown"
-              ? `Retrying in ${Math.max(0, Math.ceil((progress!.retry_at! * 1000 - now) / 1000))}s`
-              : status === "resolving"
-                ? "Resolving profile…"
-                : "Importing liked tracks…";
+            : status === "interrupted"
+              ? "Import interrupted"
+              : status === "cooldown"
+                ? `Retrying in ${Math.max(0, Math.ceil((progress!.retry_at! * 1000 - now) / 1000))}s`
+                : status === "resolving"
+                  ? "Resolving profile…"
+                  : "Importing liked tracks…";
   return (
     <Dialog title="Import from SoundCloud" close={close}>
       <form onSubmit={(e) => void submit(e)}>
@@ -106,7 +110,7 @@ export function ImportDialog({
         <input
           id="soundcloud-profile"
           aria-label="SoundCloud profile"
-          placeholder="soundcloud.com/username or username"
+          placeholder="https://soundcloud.com/username"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           disabled={running || starting}

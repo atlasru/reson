@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Heart,
   ListMusic,
@@ -15,7 +15,13 @@ import {
 } from "lucide-react";
 import { Artwork } from "../components/Artwork";
 import { time } from "../components/TrackList";
-import { control, favorite, useLibrary, usePlayer } from "../stores/core";
+import {
+  control,
+  favorite,
+  useLibrary,
+  usePlayer,
+  useQueue,
+} from "../stores/core";
 import type { Route } from "../stores/types";
 export function PlayerBar({
   queueOpen,
@@ -28,6 +34,7 @@ export function PlayerBar({
 }) {
   const p = usePlayer();
   const lib = useLibrary();
+  const queue = useQueue();
   const [seek, setSeek] = useState<number | null>(null);
   const [volume, setVolume] = useState<number | null>(null);
   const volumeTimer = useRef<number | undefined>(undefined);
@@ -35,8 +42,11 @@ export function PlayerBar({
   const t = p.current;
   const active = p.status === "playing" || p.status === "buffering";
   const busy = p.status === "loading" || p.status === "buffering";
-  const liked =
-    !!t && lib.favorites.some((f) => f.internal_id === t.internal_id);
+  const likes = useMemo(
+    () => new Set(lib.favorites.map((f) => f.internal_id)),
+    [lib.favorites],
+  );
+  const liked = !!t && likes.has(t.internal_id);
   useEffect(() => () => window.clearTimeout(volumeTimer.current), []);
   useEffect(() => {
     if (p.volume > 0) lastVolume.current = p.volume;
@@ -59,7 +69,7 @@ export function PlayerBar({
               className="now-track"
               onClick={() => navigate({ page: "track", track: t })}
             >
-              <Artwork url={t.artwork} />
+              <Artwork url={t.artwork} thumbnail />
               <span>
                 <strong>{t.title}</strong>
                 <small>{t.artists.map((a) => a.name).join(", ")}</small>
@@ -105,6 +115,7 @@ export function PlayerBar({
             className="play-button"
             aria-label={active ? "Pause" : "Play"}
             title={active ? "Pause · Space" : "Play · Space"}
+            disabled={!t && queue.entries.length === 0}
             onClick={() => control("toggle")}
           >
             {busy ? (

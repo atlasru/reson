@@ -230,7 +230,7 @@ export function App() {
                 title={p.title}
                 onClick={() => navigate({ page: "playlist", playlist: p })}
               >
-                <Artwork url={p.artwork} />
+                <Artwork url={p.artwork} thumbnail />
                 <span>{p.title}</span>
               </button>
             ))}

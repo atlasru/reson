@@ -23,6 +23,7 @@ const { control, state } = vi.hoisted(() => ({
 vi.mock("../stores/core", () => ({
   control,
   usePlayer: () => state,
+  useQueue: () => ({ entries: [] }),
   useLibrary: () => ({ favorites: [] }),
   favorite: vi.fn(),
   call: vi.fn(() => Promise.reject("test")),

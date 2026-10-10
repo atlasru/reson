@@ -302,6 +302,28 @@ describe("import interaction", () => {
     expect(close).toHaveBeenCalledOnce();
     view.unmount();
   });
+  it("retains focus and Escape when import disables the focused input", async () => {
+    const close = vi.fn();
+    const trigger = document.createElement("button");
+    document.body.append(trigger);
+    trigger.focus();
+    const view = render(<ImportDialog close={close} />);
+    const input = screen.getByRole("textbox", { name: "SoundCloud profile" });
+    expect(input).toHaveFocus();
+    fireEvent.change(input, { target: { value: "creator" } });
+    fireEvent.click(screen.getByRole("button", { name: "Import" }));
+    await waitFor(() => expect(input).toBeDisabled());
+    await waitFor(() =>
+      expect(screen.getByRole("dialog")).toContainElement(
+        document.activeElement as HTMLElement,
+      ),
+    );
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(close).toHaveBeenCalledOnce();
+    view.unmount();
+    expect(trigger).toHaveFocus();
+    trigger.remove();
+  });
 });
 describe("track interactions", () => {
   it("single click selects; double click plays; arrow and Enter navigate", () => {

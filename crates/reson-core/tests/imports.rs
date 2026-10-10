@@ -193,6 +193,39 @@ async fn empty_and_hidden_are_not_confused() {
     assert!(done.message.unwrap().contains("hidden"));
 }
 #[tokio::test]
+async fn removing_a_source_cancels_refresh_even_during_profile_resolution() {
+    let temp = tempfile::tempdir().unwrap();
+    let storage = Storage::open(&temp.path().join("state.sqlite")).unwrap();
+    let provider = MockProvider::new(vec![page(10, 0)]);
+    let manager = manager(&storage, provider.clone());
+    let initial = finished(
+        &manager,
+        manager.start("fixture", "creator").unwrap().job_id,
+    )
+    .await;
+    provider.resolving.store(true, Ordering::Relaxed);
+    let refresh = manager.start("fixture", "creator").unwrap();
+    manager.cancel_source(initial.source_id.unwrap());
+    storage
+        .remove_import_source(initial.source_id.unwrap(), true)
+        .unwrap();
+    assert_eq!(
+        finished(&manager, refresh.job_id).await.status,
+        ImportStatus::Cancelled
+    );
+    assert!(storage.import_sources().unwrap().is_empty());
+    assert!(storage.favorites().unwrap().is_empty());
+    // A later explicit import remains allowed.
+    provider.resolving.store(false, Ordering::Relaxed);
+    let new = finished(
+        &manager,
+        manager.start("fixture", "creator").unwrap().job_id,
+    )
+    .await;
+    assert_eq!(new.status, ImportStatus::Complete);
+    assert_eq!(storage.favorites().unwrap().len(), 10);
+}
+#[tokio::test]
 async fn cancellation_during_profile_resolution_request_and_cooldown_is_immediate() {
     let temp = tempfile::tempdir().unwrap();
     let storage = Storage::open(&temp.path().join("state.sqlite")).unwrap();

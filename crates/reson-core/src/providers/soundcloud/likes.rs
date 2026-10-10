@@ -66,19 +66,7 @@ impl SoundCloudProvider {
             .transport
             .get("/resolve", &[("url", url.clone())], cancel)
             .await?;
-        if value["kind"] != "user" {
-            return Err(Error::Invalid(
-                "This link does not identify a SoundCloud profile".into(),
-            ));
-        }
-        let artist = parse::artist(&value)?;
-        Ok(ImportProfile {
-            provider: "soundcloud".into(),
-            provider_user_id: artist.references[0].provider_id.clone(),
-            url: artist.references[0].url.clone().unwrap_or(url),
-            name: artist.name,
-            artwork: artist.artwork,
-        })
+        parse_import_profile(&value, &url)
     }
     pub(super) async fn import_page(
         &self,
@@ -96,6 +84,25 @@ impl SoundCloudProvider {
         }.map_err(|e| if matches!(e,Error::Unavailable) { Error::Invalid("This profile's likes are not publicly accessible. SoundCloud may have hidden them or removed the profile.".into()) } else { e })?;
         parse_likes_response(&value, &path)
     }
+}
+
+fn parse_import_profile(value: &serde_json::Value, url: &str) -> Result<ImportProfile> {
+    if value["kind"] != "user" {
+        return Err(Error::Invalid(
+            "This link does not identify a SoundCloud profile".into(),
+        ));
+    }
+    let artist = parse::artist(value)?;
+    Ok(ImportProfile {
+        provider: "soundcloud".into(),
+        provider_user_id: artist.references[0].provider_id.clone(),
+        url: artist.references[0]
+            .url
+            .clone()
+            .unwrap_or_else(|| url.into()),
+        name: artist.name,
+        artwork: artist.artwork,
+    })
 }
 
 fn parse_likes_response(value: &serde_json::Value, path: &str) -> Result<LikesPage> {
@@ -145,6 +152,40 @@ fn validate_cursor(raw: &str, path: &str) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn recorded_public_profiles_resolve_to_distinct_provider_identities() {
+        let profiles: Vec<serde_json::Value> = serde_json::from_str(include_str!(
+            "../../../tests/fixtures/soundcloud/public-profiles.json"
+        ))
+        .unwrap();
+        let profiles: Vec<_> = profiles
+            .iter()
+            .map(|v| parse_import_profile(v, v["permalink_url"].as_str().unwrap()).unwrap())
+            .collect();
+        assert_eq!(profiles[0].name, "Scott Buckley");
+        assert_eq!(profiles[0].provider_user_id, "soundcloud:users:1109382");
+        assert_ne!(profiles[0].provider_user_id, profiles[1].provider_user_id);
+        assert!(parse_import_profile(
+            &serde_json::json!({"kind":"track","id":1}),
+            "https://soundcloud.com/creator"
+        )
+        .is_err());
+    }
+
+    #[test]
+    fn recorded_short_page_still_has_a_cursor_and_an_empty_terminal_page() {
+        let pages: Vec<serde_json::Value> = serde_json::from_str(include_str!(
+            "../../../tests/fixtures/soundcloud/public-likes-pages.json"
+        ))
+        .unwrap();
+        let first = parse_likes_response(&pages[0], "/users/1109382/track_likes").unwrap();
+        assert_eq!(first.discovered, 46);
+        assert_eq!(first.failed, 0);
+        assert!(first.next.is_some());
+        let last = parse_likes_response(&pages[1], "/users/1109382/track_likes").unwrap();
+        assert_eq!(last.discovered, 0);
+        assert!(last.next.is_none());
+    }
     #[test]
     fn likes_fixture_counts_deleted_and_unavailable_without_claiming_success() {
         let value: serde_json::Value = serde_json::from_str(include_str!(

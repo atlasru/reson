@@ -7,10 +7,22 @@ const inflight = new Map<string, Promise<string>>();
 export function Artwork({
   url,
   className = "",
+  thumbnail = false,
 }: {
   url: string | null;
   className?: string;
+  thumbnail?: boolean;
 }) {
+  // SoundCloud's original 100px artwork is sufficient for compact desktop rows.
+  // Other providers keep their own URLs unchanged.
+  if (thumbnail && url) {
+    try {
+      if (new URL(url).hostname.endsWith(".sndcdn.com"))
+        url = url.replace("-t500x500.", "-large.");
+    } catch {
+      url = null;
+    }
+  }
   const [src, setSrc] = useState(url ? (resolved.get(url) ?? null) : null);
   useEffect(() => {
     let alive = true;

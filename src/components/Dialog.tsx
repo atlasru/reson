@@ -38,7 +38,10 @@ export function Dialog({
         const items = focusable();
         const first = items[0],
           last = items[items.length - 1];
-        if (
+        if (!node.contains(document.activeElement)) {
+          e.preventDefault();
+          (e.shiftKey ? last : first)?.focus();
+        } else if (
           e.shiftKey &&
           (document.activeElement === first || document.activeElement === node)
         ) {
@@ -50,9 +53,30 @@ export function Dialog({
         }
       }
     };
-    node.addEventListener("keydown", key);
+    // Starting an import disables its focused input. Keep Escape/Tab working
+    // even when the WebView temporarily moves focus to the document body.
+    const retainFocus = () => {
+      const active = document.activeElement;
+      if (
+        !node.contains(active) ||
+        (active instanceof HTMLInputElement && active.disabled) ||
+        (active instanceof HTMLButtonElement && active.disabled)
+      )
+        (focusable()[0] ?? node).focus();
+    };
+    const observer = new MutationObserver(retainFocus);
+    observer.observe(node, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["disabled"],
+    });
+    window.addEventListener("keydown", key, true);
+    window.addEventListener("focusin", retainFocus, true);
     return () => {
-      node.removeEventListener("keydown", key);
+      observer.disconnect();
+      window.removeEventListener("keydown", key, true);
+      window.removeEventListener("focusin", retainFocus, true);
       previous?.focus();
     };
   }, []);

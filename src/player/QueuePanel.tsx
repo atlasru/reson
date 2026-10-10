@@ -83,7 +83,7 @@ export function QueuePanel({ close }: { close: () => void }) {
                   }
                 >
                   <GripVertical size={14} className="grip" />
-                  <Artwork url={entry.track.artwork} />
+                  <Artwork url={entry.track.artwork} thumbnail />
                   <div className="queue-title">
                     <strong>{entry.track.title}</strong>
                     <small>

@@ -43,12 +43,16 @@ export function LibraryView({
   const [removeTracks, setRemoveTracks] = useState(false);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const localLikes = useMemo(
+    () => new Set(lib.local_favorite_ids),
+    [lib.local_favorite_ids],
+  );
   const tracks = useMemo(() => {
     let rows = tab === "liked" ? lib.favorites : lib.recent;
     if (tab === "liked" && filter !== "all")
       rows = rows.filter((t) =>
         filter === "local"
-          ? lib.local_favorite_ids.includes(t.internal_id)
+          ? localLikes.has(t.internal_id)
           : lib.import_track_sources[t.internal_id]?.includes(filter),
       );
     const q = query.toLocaleLowerCase().trim();
@@ -65,7 +69,7 @@ export function LibraryView({
           : (a.artists[0]?.name.localeCompare(b.artists[0]?.name ?? "") ?? 0),
       );
     return rows;
-  }, [lib, tab, filter, query, sort]);
+  }, [lib, localLikes, tab, filter, query, sort]);
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editor) return;
@@ -230,7 +234,7 @@ export function LibraryView({
                   jobs.filter((p) => p.source_id === s.id).at(-1) ?? s.progress;
                 return (
                   <div className="import-source" key={s.id}>
-                    <Artwork url={s.artwork} />
+                    <Artwork url={s.artwork} thumbnail />
                     <div>
                       <strong>{s.name}</strong>
                       <small>

@@ -180,8 +180,18 @@ impl ImportManager {
         }
     }
     pub fn cancel_source(&self, source_id: Uuid) {
+        let source = self.storage.import_source(source_id).ok();
         for job in self.jobs.lock().unwrap_or_else(|e| e.into_inner()).values() {
-            if job.progress.source_id == Some(source_id) {
+            let resolving_source = source.as_ref().is_some_and(|s| {
+                job.provider == s.profile.provider
+                    && (job.input == s.profile.provider_user_id
+                        || self
+                            .providers
+                            .get(&job.provider)
+                            .and_then(|p| p.normalize_profile_input(&s.profile.url))
+                            .is_ok_and(|url| url == job.input))
+            });
+            if job.progress.source_id == Some(source_id) || resolving_source {
                 job.cancel.cancel();
             }
         }
@@ -276,11 +286,14 @@ impl ImportManager {
         };
         let storage = self.storage.clone();
         let job = p.job_id;
+        let begin_cancel = cancel.clone();
         p.profile = profile.name.clone();
         p.source_id = Some(
-            tokio::task::spawn_blocking(move || storage.begin_import(&profile, job))
-                .await
-                .map_err(|_| Error::Invalid("Import storage task interrupted".into()))??,
+            tokio::task::spawn_blocking(move || {
+                storage.begin_import_checked(&profile, job, || !begin_cancel.is_cancelled())
+            })
+            .await
+            .map_err(|_| Error::Invalid("Import storage task interrupted".into()))??,
         );
         let mut cursor: Option<String> = None;
         let mut seen = HashSet::new();

@@ -10,7 +10,20 @@ use uuid::Uuid;
 
 impl Storage {
     pub fn begin_import(&self, profile: &ImportProfile, job: Uuid) -> Result<Uuid> {
+        self.begin_import_checked(profile, job, || true)
+    }
+    pub(crate) fn begin_import_checked(
+        &self,
+        profile: &ImportProfile,
+        job: Uuid,
+        allowed: impl FnOnce() -> bool,
+    ) -> Result<Uuid> {
         let mut conn = self.connection()?;
+        // Check while owning the same lock as source removal. A queued resolver
+        // must not recreate a source after the user cancelled and removed it.
+        if !allowed() {
+            return Err(Error::Cancelled);
+        }
         let tx = conn.transaction()?;
         let existing: Option<(String, Option<String>)> = tx.query_row("SELECT id,active_job FROM import_sources WHERE provider=?1 AND provider_user_id=?2", params![profile.provider, profile.provider_user_id], |r| Ok((r.get(0)?, r.get(1)?))).optional()?;
         let id = match existing {

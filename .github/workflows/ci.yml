@@ -144,7 +144,10 @@ jobs:
         run: |
           cargo install tauri-driver --locked --version 2.1.0
           if ($LASTEXITCODE -ne 0) { throw 'tauri-driver install failed' }
-          $edge = (Get-Item 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe').VersionInfo.ProductVersion
+          $runtime = Get-ChildItem 'C:/Program Files (x86)/Microsoft/EdgeWebView/Application' -Filter msedgewebview2.exe -Recurse | Sort-Object { [version]$_.VersionInfo.ProductVersion } -Descending | Select-Object -First 1
+          if (-not $runtime) { throw 'WebView2 runtime not found' }
+          $edge = $runtime.VersionInfo.ProductVersion
+          Write-Output "Using EdgeDriver for WebView2 $edge"
           Invoke-WebRequest -Uri "https://msedgedriver.microsoft.com/$edge/edgedriver_win64.zip" -OutFile edgedriver.zip
           Expand-Archive edgedriver.zip -DestinationPath edgedriver -Force
           $driver = Start-Process -FilePath "$env:USERPROFILE/.cargo/bin/tauri-driver.exe" -ArgumentList '--native-driver', "$PWD/edgedriver/msedgedriver.exe" -PassThru -RedirectStandardOutput webdriver.txt -RedirectStandardError webdriver-error.txt

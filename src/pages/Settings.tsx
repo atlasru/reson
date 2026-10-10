@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
-import { ExternalLink, FileText, HardDrive, ShieldCheck } from "lucide-react";
+import { ExternalLink, FileText } from "lucide-react";
 import {
   act,
   call,
-  installation,
   notify,
   original,
   useProviders,
@@ -50,7 +49,7 @@ export function SettingsView() {
           <div className="setting-row">
             <div>
               <strong>Output device</strong>
-              <p>System default follows the Windows default audio device.</p>
+              <p>Use the system default or choose a device.</p>
             </div>
             <select
               aria-label="Audio output"
@@ -65,52 +64,31 @@ export function SettingsView() {
             </select>
           </div>
           <p className="setting-note">
-            Native libmpv playback · AAC HLS streaming · Close exits Reson;
-            minimize keeps music playing.
+            Minimize to keep listening. Closing the window exits Reson.
           </p>
         </section>
         <section className="settings-section">
-          <h2>Connected sources</h2>
+          <h2>Music sources</h2>
           {providers.map((p) => (
             <div className="setting-row" key={p.id}>
               <div>
                 <strong>{p.display_name}</strong>
-                <p>
-                  Public guest access. Tracks, artists, playlists and related
-                  music.
-                </p>
+                <p>Public tracks, artists, playlists and profile imports.</p>
               </div>
-              <span className="connection-state">Guest</span>
+              <span className="connection-state">Public access</span>
             </div>
           ))}
           <p className="setting-note">
-            SoundCloud login needs a registered application and a secure token
-            service. Authentication is unavailable in this release. Reson
-            favorites and playlists stay local.
+            Likes and playlists are saved in Reson. They do not change your
+            SoundCloud account.
           </p>
-        </section>
-        <section className="settings-section">
-          <h2>Reson account</h2>
-          <div className="setting-row">
-            <div>
-              <strong>Guest on this device</strong>
-              <p>
-                No account needed to play public music. Account synchronization
-                is planned.
-              </p>
-            </div>
-            <ShieldCheck size={22} />
-          </div>
         </section>
         <section className="settings-section">
           <h2>Discord Rich Presence</h2>
           <div className="setting-row">
             <div>
               <strong>Share listening activity with Discord</strong>
-              <p>
-                Uses local Discord desktop IPC. No listening data goes to a
-                Reson server.
-              </p>
+              <p>Show the current track in your Discord profile.</p>
             </div>
             <input
               type="checkbox"
@@ -123,9 +101,7 @@ export function SettingsView() {
           <div className="setting-row">
             <div>
               <strong>Discord application ID</strong>
-              <p>
-                Required until Reson has its own registered Discord application.
-              </p>
+              <p>Enter an application ID to enable listening activity.</p>
             </div>
             <form
               className="inline-form"
@@ -148,14 +124,8 @@ export function SettingsView() {
           <h2>Cache</h2>
           <div className="setting-row">
             <div>
-              <strong>
-                <HardDrive size={15} />
-                Artwork cache
-              </strong>
-              <p>
-                {(cache / 1024 / 1024).toFixed(1)} MB used. Audio streams are
-                never saved to the cache.
-              </p>
+              <strong>Artwork cache</strong>
+              <p>{(cache / 1024 / 1024).toFixed(1)} MB on this device.</p>
             </div>
             <button
               className="secondary"
@@ -190,23 +160,9 @@ export function SettingsView() {
         </section>
         <section className="settings-section">
           <h2>Privacy</h2>
-          <div className="setting-row">
-            <div>
-              <strong>Anonymous usage telemetry</strong>
-              <p>
-                Disabled. This build has no collection endpoint and sends no
-                usage telemetry.
-              </p>
-            </div>
-            <span className="connection-state">Off</span>
-          </div>
           <p className="setting-note">
-            Installation ID is random, never HWID-derived. Searches and music
-            requests go directly to SoundCloud. Listening history and library
-            stay on this device.
-          </p>
-          <p className="monospace">
-            Installation: {installation.get()?.installation_id}
+            Your library and listening history stay on this device. Music
+            requests go to SoundCloud. Reson does not collect usage telemetry.
           </p>
         </section>
         <section className="settings-section">

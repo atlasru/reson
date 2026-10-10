@@ -259,7 +259,7 @@ export function TrackList({
                   <Play size={14} />
                 </button>
                 <div className="track-name">
-                  <Artwork url={t.artwork} />
+                  <Artwork url={t.artwork} thumbnail />
                   <span>
                     <strong title={t.title}>
                       {t.explicit && <b className="explicit">E</b>}
