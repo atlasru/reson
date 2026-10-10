@@ -610,6 +610,10 @@ kbd {
   overflow: hidden;
   line-height: 1.25;
 }
+.compact-artist,
+.track-caption.artist-only {
+  display: none;
+}
 .artist-name {
   white-space: nowrap;
   overflow: hidden;
@@ -1553,6 +1557,12 @@ kbd {
   .track-head > span:nth-child(3),
   .artist-name {
     display: none;
+  }
+  .compact-artist {
+    display: inline;
+  }
+  .track-caption.artist-only {
+    display: block;
   }
   .track-name:after {
     content: none;

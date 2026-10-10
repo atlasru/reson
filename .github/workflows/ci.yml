@@ -151,11 +151,38 @@ jobs:
           Invoke-WebRequest -Uri "https://msedgedriver.microsoft.com/$edge/edgedriver_win64.zip" -OutFile edgedriver.zip
           Expand-Archive edgedriver.zip -DestinationPath edgedriver -Force
           $driver = Start-Process -FilePath "$env:USERPROFILE/.cargo/bin/tauri-driver.exe" -ArgumentList '--native-driver', "$PWD/edgedriver/msedgedriver.exe" -PassThru -RedirectStandardOutput webdriver.txt -RedirectStandardError webdriver-error.txt
+          # WebView2 150+ ignores environment overrides for elevated hosts.
+          # GitHub's Windows runner is elevated. Scope temporary test policy to
+          # this executable, then restore it; the shipped app is unchanged.
+          # https://github.com/MicrosoftEdge/WebView2Feedback/issues/5645
+          $policyRoot = 'HKLM:/Software/Policies/Microsoft/Edge/WebView2'
+          $policyName = 'Reson.exe'
+          $policies = @{
+            AdditionalBrowserArguments = '--remote-debugging-port=9222 --remote-debugging-address=127.0.0.1'
+            UserDataFolder = (Join-Path $PWD '.smoke/webview-profile')
+          }
+          $previousPolicies = @()
           try {
+            foreach ($name in $policies.Keys) {
+              $key = Join-Path $policyRoot $name
+              $existed = Test-Path $key
+              $old = if ($existed) { (Get-Item $key).GetValue($policyName) } else { $null }
+              $previousPolicies += @{ Key = $key; Existed = $existed; Value = $old }
+              New-Item -Path $key -Force | Out-Null
+              New-ItemProperty -Path $key -Name $policyName -Value $policies[$name] -PropertyType String -Force | Out-Null
+            }
             python scripts/validate-redesign.py --application "$PWD/portable/Reson.exe" --output .smoke/redesign
             if ($LASTEXITCODE -ne 0) { throw 'Production desktop validation failed' }
           } finally {
             if (-not $driver.HasExited) { Stop-Process -Id $driver.Id -Force }
+            foreach ($old in $previousPolicies) {
+              if ($null -ne $old.Value) {
+                New-ItemProperty -Path $old.Key -Name $policyName -Value $old.Value -PropertyType String -Force | Out-Null
+              } else {
+                Remove-ItemProperty -Path $old.Key -Name $policyName -ErrorAction SilentlyContinue
+              }
+              if (-not $old.Existed) { Remove-Item -Path $old.Key -ErrorAction SilentlyContinue }
+            }
           }
       - uses: actions/upload-artifact@v4
         if: always()

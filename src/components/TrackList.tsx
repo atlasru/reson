@@ -265,7 +265,18 @@ export function TrackList({
                       {t.explicit && <b className="explicit">E</b>}
                       {t.title}
                     </strong>
-                    {caption && <small title={caption}>{caption}</small>}
+                    <small
+                      className={`track-caption ${caption ? "" : "artist-only"}`}
+                      title={[t.artists.map((a) => a.name).join(", "), caption]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    >
+                      <span className="compact-artist">
+                        {t.artists.map((a) => a.name).join(", ")}
+                        {caption ? " · " : ""}
+                      </span>
+                      {caption}
+                    </small>
                   </span>
                 </div>
                 <button
