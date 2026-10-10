@@ -18,9 +18,11 @@ import urllib.request
 parser = argparse.ArgumentParser()
 parser.add_argument('--application', required=True)
 parser.add_argument('--driver-url', default='http://127.0.0.1:4444')
+parser.add_argument('--native-webkit-driver', action='store_true', help='Connect directly to WebKitWebDriver on Linux')
 parser.add_argument('--output', default='.smoke/redesign')
 parser.add_argument('--profile', default='scottbuckley')
 parser.add_argument('--capture-device', help='Optional PulseAudio output monitor for real PCM verification')
+parser.add_argument('--audio-device', help='Explicit native output for the test profile; use null on headless Windows without a sound device')
 args = parser.parse_args()
 output = pathlib.Path(args.output)
 output.mkdir(parents=True, exist_ok=True)
@@ -97,6 +99,12 @@ def output_pcm():
         check('Native PCM reaches output device',rms>.0001,{'samples':len(samples),'rms':rms,'peak':max(map(abs,samples),default=0)})
     finally:
         recording.unlink(missing_ok=True)
+
+def native_playing(require_position=False):
+    player = rpc('bootstrap')['player']
+    if player['status'] == 'error':
+        raise RuntimeError('Native playback failed: ' + str(player['error']) + '; devices=' + json.dumps(rpc('audio_devices')))
+    return player['status'] == 'playing' and (not require_position or player['position_ms'] > 1500)
 
 def text_input(selector, value):
     check('Input present: ' + selector, js('const e=document.querySelector(' + json.dumps(selector) + ');if(!e)return false;Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,"value").set.call(e,' + json.dumps(value) + ');e.dispatchEvent(new Event("input",{bubbles:true}));return true;'))
@@ -175,6 +183,10 @@ def start():
             return False
     wait(ready, 30, 'driver startup')
     capabilities = {'tauri:options': {'application': os.path.abspath(args.application)}}
+    if args.native_webkit_driver:
+        if os.name == 'nt':
+            raise ValueError('Native WebKitWebDriver is Linux-only')
+        capabilities = {'webkitgtk:browserOptions':{'binary':os.path.abspath(args.application),'args':[]}}
     if os.name == 'nt':
         # Attach to the actual release application. The Edge launch method
         # assumes its own profile path, whereas Tauri owns its data directory.
@@ -202,6 +214,12 @@ def start():
     root = '/session/' + value['sessionId']
     request(root + '/timeouts', {'script': 180000, 'pageLoad': 60000, 'implicit': 0})
     wait(lambda: js('return !!window.__TAURI_INTERNALS__ && !!document.querySelector(".page")'), 90, 'native app startup')
+    if args.audio_device:
+        devices = rpc('audio_devices')
+        settings = rpc('bootstrap')['settings']
+        settings['audio_device'] = args.audio_device
+        rpc('update_settings', {'settings':settings})
+        check('Explicit native test output selected',rpc('bootstrap')['settings']['audio_device'] == args.audio_device,{'selected':args.audio_device,'available':devices})
     resize(1366,768)
 
 try:
@@ -225,9 +243,10 @@ try:
     wait(lambda: js('return !!document.querySelector(".context-menu")'))
     js('[...document.querySelectorAll(".context-menu button")].find(e=>e.textContent.trim()==="Open track").click();')
     wait(lambda: js('return !!document.querySelector(".entity-header h1") && !!document.querySelector(".entity-header .primary")'))
+    wait(lambda: js('return document.querySelectorAll(".track-row").length > 1'), detail='real related tracks')
     capture('04-track')
     click('.entity-header .primary')
-    wait(lambda: rpc('bootstrap')['player']['status'] == 'playing' and rpc('bootstrap')['player']['position_ms'] > 1500, 180, 'native playback')
+    wait(lambda: native_playing(True), 180, 'native playback')
     output_pcm()
     capture('05-playback')
     key(' ','Space')
@@ -284,7 +303,7 @@ try:
     wait(lambda: js('return !document.querySelector(".dialog")'))
     # Double-click an imported row through the real UI and native player.
     js('document.querySelector(".track-row").dispatchEvent(new MouseEvent("dblclick",{bubbles:true}));')
-    wait(lambda:rpc('bootstrap')['player']['status']=='playing',180,'imported track playback')
+    wait(native_playing,180,'imported track playback')
     imported=rpc('bootstrap')['player']['current']
     check('Double-click plays a saved import',any(t['internal_id']==imported['internal_id'] for t in before))
     check('Imported track plays natively',True,imported['title'])

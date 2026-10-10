@@ -171,7 +171,10 @@ jobs:
               New-Item -Path $key -Force | Out-Null
               New-ItemProperty -Path $key -Name $policyName -Value $policies[$name] -PropertyType String -Force | Out-Null
             }
-            python scripts/validate-redesign.py --application "$PWD/portable/Reson.exe" --output .smoke/redesign
+            # The runner has no hardware audio endpoint. Decode/play through
+            # libmpv's explicit native null device; PCM energy is independently
+            # checked above from both portable and freshly installed builds.
+            python scripts/validate-redesign.py --application "$PWD/portable/Reson.exe" --audio-device null --output .smoke/redesign
             if ($LASTEXITCODE -ne 0) { throw 'Production desktop validation failed' }
           } finally {
             if (-not $driver.HasExited) { Stop-Process -Id $driver.Id -Force }
