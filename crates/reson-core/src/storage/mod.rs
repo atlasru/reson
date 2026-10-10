@@ -12,6 +12,7 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 use uuid::Uuid;
+mod imports;
 
 #[derive(Clone)]
 pub struct Storage(Arc<Mutex<Connection>>);
@@ -34,7 +35,7 @@ impl Storage {
             "PRAGMA foreign_keys=ON; PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL;",
         )?;
         let version: i64 = conn.query_row("PRAGMA user_version", [], |r| r.get(0))?;
-        if version > 1 {
+        if version > 2 {
             return Err(Error::Invalid(
                 "This database requires a newer version of Reson".into(),
             ));
@@ -43,6 +44,12 @@ impl Storage {
             let tx = conn.transaction()?;
             tx.execute_batch(include_str!("../../../../migrations/001_init.sql"))?;
             tx.pragma_update(None, "user_version", 1)?;
+            tx.commit()?;
+        }
+        if version < 2 {
+            let tx = conn.transaction()?;
+            tx.execute_batch(include_str!("../../../../migrations/002_imports.sql"))?;
+            tx.pragma_update(None, "user_version", 2)?;
             tx.commit()?;
         }
         let time = now();
@@ -133,13 +140,12 @@ impl Storage {
                 params![id.to_string(), now()],
             )?;
         } else {
-            self.connection()?
-                .execute("DELETE FROM favorites WHERE track_id=?1", [id.to_string()])?;
+            self.remove_saved_track(id)?;
         }
         Ok(())
     }
     pub fn favorites(&self) -> Result<Vec<Track>> {
-        self.list("SELECT t.json FROM favorites f JOIN tracks t ON t.id=f.track_id ORDER BY f.added_at DESC")
+        self.list("SELECT t.json FROM tracks t JOIN (SELECT track_id,MAX(added_at) AS added_at FROM (SELECT track_id,added_at FROM favorites UNION ALL SELECT track_id,added_at FROM import_tracks) GROUP BY track_id) f ON t.id=f.track_id ORDER BY f.added_at DESC,t.id")
     }
     pub fn history(&self) -> Result<Vec<Track>> {
         self.list("SELECT t.json FROM tracks t JOIN (SELECT track_id,MAX(id) AS recent FROM history GROUP BY track_id) h ON h.track_id=t.id ORDER BY h.recent DESC LIMIT 100")
@@ -271,7 +277,7 @@ impl Storage {
     }
     pub fn cleanup_metadata(&self) -> Result<()> {
         // Retain entities referenced by user data; cap the remaining normalized metadata.
-        self.connection()?.execute("DELETE FROM tracks WHERE id NOT IN (SELECT track_id FROM favorites UNION SELECT track_id FROM history UNION SELECT track_id FROM playlist_tracks) AND id NOT IN (SELECT id FROM tracks ORDER BY cached_at DESC LIMIT 10000) AND id NOT IN (SELECT json_extract(j.value,'$.track.internal_id') FROM json_each((SELECT json FROM queue WHERE singleton=1),'$.entries') j)",[])?;
+        self.connection()?.execute("DELETE FROM tracks WHERE id NOT IN (SELECT track_id FROM favorites UNION SELECT track_id FROM history UNION SELECT track_id FROM playlist_tracks UNION SELECT track_id FROM import_tracks UNION SELECT track_id FROM import_dismissals) AND id NOT IN (SELECT id FROM tracks ORDER BY cached_at DESC LIMIT 10000) AND id NOT IN (SELECT json_extract(j.value,'$.track.internal_id') FROM json_each((SELECT json FROM queue WHERE singleton=1),'$.entries') j)",[])?;
         self.connection()?.execute("DELETE FROM artists WHERE id NOT IN (SELECT id FROM artists ORDER BY rowid DESC LIMIT 10000) AND id NOT IN (SELECT json_extract(a.value,'$.internal_id') FROM tracks t,json_each(t.json,'$.artists') a)",[])?;
         Ok(())
     }

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { ArrowUpRight, Play } from "lucide-react";
 import {
   call,
   play,
+  selectedProvider,
   useLibrary,
   useProviders,
   useSelectedProvider,
@@ -11,30 +11,38 @@ import type { Route, Track } from "../stores/types";
 import { Artwork } from "../components/Artwork";
 import { TrackList } from "../components/TrackList";
 import { Empty, Failure, Skeleton } from "../components/States";
+const catalog = new Map<string, Track[]>();
 export function Home({ navigate }: { navigate: (r: Route) => void }) {
   const lib = useLibrary();
   const providers = useProviders();
   const selectedSource = useSelectedProvider();
-  const [tracks, setTracks] = useState<Track[]>([]);
-  const [loading, setLoading] = useState(true);
+  const provider = selectedSource ?? providers[0]?.id ?? "";
+  const info = providers.find((p) => p.id === provider);
+  const [anchor, setAnchor] = useState<Track | null>(lib.recent[0] ?? null);
+  const [mode, setMode] = useState("trending");
+  const source = anchor?.sources.find((s) => s.provider === provider);
+  const id =
+    mode === "related" && info?.capabilities.includes("related")
+      ? source?.provider_id
+      : undefined;
+  const key = `${provider}:${id ?? "trending"}`;
+  const [tracks, setTracks] = useState<Track[]>(catalog.get(key) ?? []);
+  const [loading, setLoading] = useState(!catalog.has(key));
   const [error, setError] = useState("");
   const [retry, setRetry] = useState(0);
-  const source = lib.recent[0]?.sources[0];
-  const provider = selectedSource ?? source?.provider ?? providers[0]?.id ?? "";
-  const info = providers.find((p) => p.id === provider);
-  const id =
-    source?.provider === provider && info?.capabilities.includes("related")
-      ? source.provider_id
-      : undefined;
   const canDiscover = !!info?.capabilities.includes(
     id ? "related" : "discovery",
   );
-  const name =
-    providers.find((p) => p.id === provider)?.display_name ?? provider;
   useEffect(() => {
     let alive = true;
-    setLoading(true);
     setError("");
+    const cached = catalog.get(key);
+    if (cached && retry === 0) {
+      setTracks(cached);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
     if (!canDiscover) {
       setLoading(false);
       return;
@@ -43,8 +51,11 @@ export function Home({ navigate }: { navigate: (r: Route) => void }) {
       provider,
       id: id ?? null,
     })
-      .then((r) => {
-        if (alive) setTracks(r);
+      .then((rows) => {
+        if (alive) {
+          catalog.set(key, rows);
+          setTracks(rows);
+        }
       })
       .catch((e) => {
         if (alive) setError(String(e));
@@ -55,24 +66,28 @@ export function Home({ navigate }: { navigate: (r: Route) => void }) {
     return () => {
       alive = false;
     };
-  }, [id, provider, retry, canDiscover]);
+  }, [id, provider, key, canDiscover, retry]);
   return (
-    <div className="page">
+    <div className="page home-page">
       <header className="page-title">
-        <div>
-          <span className="eyebrow">Your music, in one place</span>
-          <h1>Home</h1>
-        </div>
-        <button
-          className="secondary"
-          onClick={() => navigate({ page: "search" })}
-        >
-          Find music <ArrowUpRight size={16} />
-        </button>
+        <h1>Home</h1>
+        {providers.length > 1 && (
+          <select
+            aria-label="Music source"
+            value={provider}
+            onChange={(e) => selectedProvider.set(e.target.value)}
+          >
+            {providers.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.display_name}
+              </option>
+            ))}
+          </select>
+        )}
       </header>
       {lib.recent.length > 0 && (
         <section className="recent-strip">
-          <h2>Pick up where you left off</h2>
+          <h2>Recently played</h2>
           <div>
             {lib.recent.slice(0, 4).map((t) => (
               <button
@@ -85,27 +100,59 @@ export function Home({ navigate }: { navigate: (r: Route) => void }) {
                   <strong>{t.title}</strong>
                   <small>{t.artists.map((a) => a.name).join(", ")}</small>
                 </span>
-                <Play size={15} />
               </button>
             ))}
           </div>
         </section>
       )}
+      <div className="tabs">
+        <button
+          className={mode === "trending" ? "selected" : ""}
+          onClick={() => setMode("trending")}
+        >
+          Trending
+        </button>
+        <button
+          className={mode === "related" ? "selected" : ""}
+          disabled={
+            !lib.recent.length || !info?.capabilities.includes("related")
+          }
+          onClick={() => {
+            setAnchor(lib.recent[0] ?? null);
+            setMode("related");
+          }}
+        >
+          For you
+        </button>
+      </div>
       <div className="section-title">
-        <h2>{id ? "More like your last listen" : `Trending on ${name}`}</h2>
-        <span>{name} · Public catalog</span>
+        <h2>
+          {id ? `More like ${anchor?.title}` : (info?.display_name ?? provider)}
+        </h2>
       </div>
       {!canDiscover ? (
         <Empty
           title="Explore this source"
-          detail="Use Search to find music and build your queue."
+          detail="Search to find music."
+          action={
+            <button
+              className="secondary"
+              onClick={() => navigate({ page: "search" })}
+            >
+              Search music
+            </button>
+          }
         />
       ) : loading ? (
         <Skeleton />
       ) : error ? (
         <Failure message={error} retry={() => setRetry((n) => n + 1)} />
       ) : (
-        <TrackList tracks={tracks} navigate={navigate} />
+        <TrackList
+          tracks={tracks}
+          navigate={navigate}
+          listKey={`home:${key}`}
+        />
       )}
     </div>
   );

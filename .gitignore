@@ -20,3 +20,5 @@ Reson_*.exe
 Reson_*.zip
 SHA256SUMS.txt
 smoke*.txt
+
+__pycache__/

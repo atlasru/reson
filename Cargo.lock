@@ -3080,7 +3080,7 @@ dependencies = [
 
 [[package]]
 name = "reson"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "discord-rich-presence",
  "open",
@@ -3102,7 +3102,7 @@ dependencies = [
 
 [[package]]
 name = "reson-core"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "async-trait",
  "libloading 0.8.9",

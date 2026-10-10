@@ -3,7 +3,10 @@ use reson_core::{
     cache::ArtworkCache,
     config::Settings,
     error::{Error, Result},
-    library::Library,
+    library::{
+        imports::{ImportManager, ImportProgress},
+        Library,
+    },
     models::*,
     player::{Player, PlayerCommand, PlayerState},
     providers::{ProviderInfo, ProviderRegistry},
@@ -35,6 +38,7 @@ pub struct AppState {
     pub logs: PathBuf,
     pub data_dir: PathBuf,
     pub frontend_connected: AtomicBool,
+    pub imports: ImportManager,
 }
 #[derive(Serialize)]
 pub struct Snapshot {
@@ -45,17 +49,23 @@ pub struct Snapshot {
     providers: Vec<ProviderInfo>,
     installation: Installation,
     audio_error: Option<String>,
+    imports: Vec<ImportProgress>,
 }
 #[tauri::command]
-pub fn bootstrap(state: State<'_, AppState>) -> Result<Snapshot> {
+pub async fn bootstrap(state: State<'_, AppState>) -> Result<Snapshot> {
+    let storage = state.storage.clone();
+    let library = tokio::task::spawn_blocking(move || Library::load(&storage))
+        .await
+        .map_err(|_| Error::Invalid("Library loading interrupted".into()))??;
     let snapshot = Snapshot {
         player: state.player.state.borrow().clone(),
         queue: state.player.queue.borrow().clone(),
-        library: Library::load(&state.storage)?,
+        library,
         settings: state.storage.settings()?,
         providers: state.providers.list(),
         installation: state.storage.installation()?,
         audio_error: state.audio_error.clone(),
+        imports: state.imports.progress(),
     };
     if !state.frontend_connected.swap(true, Ordering::Relaxed) {
         tracing::info!("Desktop UI connected");
@@ -236,67 +246,114 @@ pub async fn queue_clear(state: State<'_, AppState>) -> Result<()> {
     state.player.command(PlayerCommand::Clear).await
 }
 #[tauri::command]
-pub fn library_state(state: State<'_, AppState>) -> Result<Library> {
-    Library::load(&state.storage)
+pub async fn library_state(state: State<'_, AppState>) -> Result<Library> {
+    let storage = state.storage.clone();
+    tokio::task::spawn_blocking(move || Library::load(&storage))
+        .await
+        .map_err(|_| Error::Invalid("Library loading interrupted".into()))?
 }
-fn publish_library(app: &tauri::AppHandle, state: &AppState) -> Result<()> {
-    app.emit("library-state", Library::load(&state.storage)?)
+#[tauri::command]
+pub async fn start_likes_import(
+    state: State<'_, AppState>,
+    provider: String,
+    input: String,
+) -> Result<ImportProgress> {
+    state.imports.start(&provider, &input)
+}
+#[tauri::command]
+pub fn cancel_likes_import(state: State<'_, AppState>, job_id: Uuid) {
+    state.imports.cancel(job_id);
+}
+#[tauri::command]
+pub fn import_state(state: State<'_, AppState>) -> Vec<ImportProgress> {
+    state.imports.progress()
+}
+#[tauri::command]
+pub async fn remove_import_source(
+    app: tauri::AppHandle,
+    state: State<'_, AppState>,
+    id: Uuid,
+    remove_tracks: bool,
+) -> Result<()> {
+    state.imports.cancel_source(id);
+    state.storage.remove_import_source(id, remove_tracks)?;
+    publish_library(&app, &state).await
+}
+#[tauri::command]
+pub async fn remove_saved_track(
+    app: tauri::AppHandle,
+    state: State<'_, AppState>,
+    id: Uuid,
+) -> Result<()> {
+    state.storage.remove_saved_track(id)?;
+    publish_library(&app, &state).await
+}
+async fn publish_library(app: &tauri::AppHandle, state: &AppState) -> Result<()> {
+    let storage = state.storage.clone();
+    let library = tokio::task::spawn_blocking(move || Library::load(&storage))
+        .await
+        .map_err(|_| Error::Invalid("Library loading interrupted".into()))??;
+    app.emit("library-state", library)
         .map_err(|_| Error::Invalid("Cannot synchronize library".into()))
 }
 #[tauri::command]
-pub fn set_favorite(
+pub async fn set_favorite(
     app: tauri::AppHandle,
     state: State<'_, AppState>,
     id: Uuid,
     enabled: bool,
 ) -> Result<()> {
     state.storage.favorite(id, enabled)?;
-    publish_library(&app, &state)
+    publish_library(&app, &state).await
 }
 #[tauri::command]
-pub fn create_playlist(
+pub async fn create_playlist(
     app: tauri::AppHandle,
     state: State<'_, AppState>,
     title: String,
 ) -> Result<Uuid> {
     let id = state.storage.create_playlist(&title)?;
-    publish_library(&app, &state)?;
+    publish_library(&app, &state).await?;
     Ok(id)
 }
 #[tauri::command]
-pub fn rename_playlist(
+pub async fn rename_playlist(
     app: tauri::AppHandle,
     state: State<'_, AppState>,
     id: Uuid,
     title: String,
 ) -> Result<()> {
     state.storage.rename_playlist(id, &title)?;
-    publish_library(&app, &state)
+    publish_library(&app, &state).await
 }
 #[tauri::command]
-pub fn delete_playlist(app: tauri::AppHandle, state: State<'_, AppState>, id: Uuid) -> Result<()> {
+pub async fn delete_playlist(
+    app: tauri::AppHandle,
+    state: State<'_, AppState>,
+    id: Uuid,
+) -> Result<()> {
     state.storage.delete_playlist(id)?;
-    publish_library(&app, &state)
+    publish_library(&app, &state).await
 }
 #[tauri::command]
-pub fn add_to_playlist(
+pub async fn add_to_playlist(
     app: tauri::AppHandle,
     state: State<'_, AppState>,
     id: Uuid,
     ids: Vec<Uuid>,
 ) -> Result<()> {
     state.storage.add_to_playlist(id, &ids)?;
-    publish_library(&app, &state)
+    publish_library(&app, &state).await
 }
 #[tauri::command]
-pub fn remove_from_playlist(
+pub async fn remove_from_playlist(
     app: tauri::AppHandle,
     state: State<'_, AppState>,
     id: Uuid,
     position: usize,
 ) -> Result<()> {
     state.storage.remove_from_playlist(id, position)?;
-    publish_library(&app, &state)
+    publish_library(&app, &state).await
 }
 #[tauri::command]
 pub async fn update_settings(

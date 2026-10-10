@@ -78,15 +78,15 @@ jobs:
           Copy-Item src-tauri/resources/THIRD_PARTY_NOTICES.md portable/
           Copy-Item src-tauri/resources/licenses portable/ -Recurse
           Copy-Item LICENSE portable/
-          Compress-Archive -Path portable/* -DestinationPath Reson_0.1.0_windows_x64_portable.zip
-          Copy-Item (Get-ChildItem "$out/bundle/nsis/*setup.exe" | Select-Object -First 1).FullName Reson_0.1.0_x64-setup.exe
-          Get-FileHash Reson_0.1.0_windows_x64_portable.zip,Reson_0.1.0_x64-setup.exe -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLowerInvariant())  $(Split-Path $_.Path -Leaf)" } | Set-Content SHA256SUMS.txt
+          Compress-Archive -Path portable/* -DestinationPath Reson_0.2.0_windows_x64_portable.zip
+          Copy-Item (Get-ChildItem "$out/bundle/nsis/*setup.exe" | Select-Object -First 1).FullName Reson_0.2.0_x64-setup.exe
+          Get-FileHash Reson_0.2.0_windows_x64_portable.zip,Reson_0.2.0_x64-setup.exe -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLowerInvariant())  $(Split-Path $_.Path -Leaf)" } | Set-Content SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
           name: Reson-windows-x64
           path: |
-            Reson_0.1.0_x64-setup.exe
-            Reson_0.1.0_windows_x64_portable.zip
+            Reson_0.2.0_x64-setup.exe
+            Reson_0.2.0_windows_x64_portable.zip
             SHA256SUMS.txt
           if-no-files-found: error
           retention-days: 30
@@ -101,7 +101,7 @@ jobs:
         shell: pwsh
         run: |
           $installDir = Join-Path $env:RUNNER_TEMP 'reson-install'
-          $installer = Start-Process -FilePath "$PWD/Reson_0.1.0_x64-setup.exe" -ArgumentList '/S', "/D=$installDir" -Wait -PassThru
+          $installer = Start-Process -FilePath "$PWD/Reson_0.2.0_x64-setup.exe" -ArgumentList '/S', "/D=$installDir" -Wait -PassThru
           if ($installer.ExitCode -ne 0) { throw "Installer failed: $($installer.ExitCode)" }
           $app = Join-Path $installDir 'reson.exe'
           if (-not (Test-Path $app)) { throw 'Installed application missing' }
@@ -139,6 +139,27 @@ jobs:
           } finally {
             if (-not $app.HasExited) { Stop-Process -Id $app.Id -Force }
           }
+      - name: Validate release desktop UI and capture screenshots
+        shell: pwsh
+        run: |
+          cargo install tauri-driver --locked --version 2.1.0
+          if ($LASTEXITCODE -ne 0) { throw 'tauri-driver install failed' }
+          $edge = (Get-Item 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe').VersionInfo.ProductVersion
+          Invoke-WebRequest -Uri "https://msedgedriver.microsoft.com/$edge/edgedriver_win64.zip" -OutFile edgedriver.zip
+          Expand-Archive edgedriver.zip -DestinationPath edgedriver -Force
+          $driver = Start-Process -FilePath "$env:USERPROFILE/.cargo/bin/tauri-driver.exe" -ArgumentList '--native-driver', "$PWD/edgedriver/msedgedriver.exe" -PassThru -RedirectStandardOutput webdriver.txt -RedirectStandardError webdriver-error.txt
+          try {
+            python scripts/validate-redesign.py --application "$PWD/portable/Reson.exe" --output .smoke/redesign
+            if ($LASTEXITCODE -ne 0) { throw 'Production desktop validation failed' }
+          } finally {
+            if (-not $driver.HasExited) { Stop-Process -Id $driver.Id -Force }
+          }
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Reson-production-screenshots
+          path: .smoke/redesign/
+          if-no-files-found: warn
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -149,6 +170,8 @@ jobs:
             installed-smoke.txt
             installed-smoke-error.txt
             desktop-startup.txt
+            webdriver.txt
+            webdriver-error.txt
   release:
     needs: [frontend, core, windows]
     if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'push' && startsWith(github.event.head_commit.message, 'release:'))
@@ -161,10 +184,10 @@ jobs:
         with:
           name: Reson-windows-x64
           path: release-files
-      - name: Verify and publish v0.1.0
+      - name: Verify and publish v0.2.0
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           cd release-files
           sha256sum --check SHA256SUMS.txt
-          gh release create v0.1.0 Reson_0.1.0_x64-setup.exe Reson_0.1.0_windows_x64_portable.zip SHA256SUMS.txt --target "$GITHUB_SHA" --title 'Reson v0.1.0' --notes-file ../docs/RELEASE_NOTES.md
+          gh release create v0.2.0 Reson_0.2.0_x64-setup.exe Reson_0.2.0_windows_x64_portable.zip SHA256SUMS.txt --target "$GITHUB_SHA" --title 'Reson v0.2.0' --notes-file ../docs/RELEASE_NOTES.md

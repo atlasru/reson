@@ -1,3 +1,4 @@
+pub mod likes;
 pub mod parse;
 mod transport;
 
@@ -87,8 +88,27 @@ impl MusicProvider for SoundCloudProvider {
                 Capability::Related,
                 Capability::Discovery,
                 Capability::UrlResolution,
+                Capability::PublicLikesImport,
             ],
         }
+    }
+    fn normalize_profile_input(&self, input: &str) -> Result<String> {
+        likes::normalize_profile(input)
+    }
+    async fn public_profile(
+        &self,
+        input: &str,
+        cancel: CancellationToken,
+    ) -> Result<crate::library::imports::ImportProfile> {
+        self.import_profile(input, cancel).await
+    }
+    async fn liked_tracks_page(
+        &self,
+        id: &str,
+        cursor: Option<&str>,
+        cancel: CancellationToken,
+    ) -> Result<crate::library::imports::LikesPage> {
+        self.import_page(id, cursor, cancel).await
     }
     fn artwork_hosts(&self) -> &'static [&'static str] {
         &["sndcdn.com"]

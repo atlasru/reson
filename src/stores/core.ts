@@ -9,6 +9,7 @@ import type {
   Settings,
   ProviderInfo,
   Installation,
+  ImportProgress,
 } from "./types";
 
 function atom<T>(initial: T) {
@@ -50,7 +51,21 @@ export const library = atom<Library>({
   favorites: [],
   recent: [],
   playlists: [],
+  local_favorite_ids: [],
+  import_sources: [],
+  import_track_sources: {},
 });
+export const imports = atom<ImportProgress[]>([]);
+export const useImports = () =>
+  useSyncExternalStore(imports.subscribe, imports.get);
+export const importActive = (p: ImportProgress) =>
+  ["resolving", "importing", "cooldown"].includes(p.status);
+export function rememberImport(p: ImportProgress) {
+  // A fast job may finish before its start command reaches the renderer.
+  const previous = imports.get().find((j) => j.job_id === p.job_id);
+  if (previous && !importActive(previous) && importActive(p)) return;
+  imports.set([...imports.get().filter((j) => j.job_id !== p.job_id), p]);
+}
 export const settings = atom<Settings>({
   volume: 0.7,
   cache_limit_mb: 256,
@@ -67,6 +82,11 @@ export const installation = atom<Installation | null>(null);
 export const notices = atom<{ id: number; text: string } | null>(null);
 export const usePlayer = () =>
   useSyncExternalStore(player.subscribe, player.get);
+export const useCurrentTrackId = () =>
+  useSyncExternalStore(
+    player.subscribe,
+    () => player.get().current?.internal_id,
+  );
 export const useQueue = () => useSyncExternalStore(queue.subscribe, queue.get);
 export const useLibrary = () =>
   useSyncExternalStore(library.subscribe, library.get);
@@ -92,6 +112,14 @@ export async function refreshLibrary() {
   library.set(await call<Library>("library_state"));
 }
 export async function initialize() {
+  let refreshTimer: number | undefined;
+  const updateLibrary = () => {
+    if (refreshTimer !== undefined) return;
+    refreshTimer = window.setTimeout(() => {
+      refreshTimer = undefined;
+      void refreshLibrary().catch((e) => notify(String(e)));
+    }, 500);
+  };
   const unlisten = await Promise.all([
     listen<PlayerState>("player-state", (e) => {
       player.set(e.payload);
@@ -103,16 +131,30 @@ export async function initialize() {
     listen<Queue>("queue-state", (e) => queue.set(e.payload)),
     listen<Library>("library-state", (e) => library.set(e.payload)),
     listen<Settings>("settings-state", (e) => settings.set(e.payload)),
+    listen<ImportProgress>("import-progress", (e) => {
+      rememberImport(e.payload);
+      if (e.payload.pages > 0 || !importActive(e.payload)) updateLibrary();
+    }),
   ]);
-  const s = await call<AppSnapshot>("bootstrap");
+  let s: AppSnapshot;
+  try {
+    s = await call<AppSnapshot>("bootstrap");
+  } catch (e) {
+    unlisten.forEach((fn) => fn());
+    throw e;
+  }
   player.set(s.player);
   queue.set(s.queue);
   library.set(s.library);
   settings.set(s.settings);
   providers.set(s.providers);
   installation.set(s.installation);
+  imports.set(s.imports ?? []);
   if (s.audio_error) notify(s.audio_error);
-  return () => unlisten.forEach((fn) => fn());
+  return () => {
+    window.clearTimeout(refreshTimer);
+    unlisten.forEach((fn) => fn());
+  };
 }
 export const play = (ids: string[], index = 0) =>
   act("play_tracks", { ids, index });

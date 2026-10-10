@@ -1,10 +1,20 @@
 import { CloudOff, SearchX, RotateCcw } from "lucide-react";
-export function Empty({ title, detail }: { title: string; detail?: string }) {
+import type { ReactNode } from "react";
+export function Empty({
+  title,
+  detail,
+  action,
+}: {
+  title: string;
+  detail?: string;
+  action?: ReactNode;
+}) {
   return (
     <div className="empty">
       <SearchX size={28} />
       <h3>{title}</h3>
       {detail && <p>{detail}</p>}
+      {action}
     </div>
   );
 }

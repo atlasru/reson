@@ -21,7 +21,11 @@ pub struct Transport {
 impl Transport {
     pub fn new() -> Result<Self> {
         let client = Client::builder()
-            .user_agent("Reson/0.1.0 (+https://github.com/atlasru/reson)")
+            .user_agent(concat!(
+                "Reson/",
+                env!("CARGO_PKG_VERSION"),
+                " (+https://github.com/atlasru/reson)"
+            ))
             .connect_timeout(Duration::from_secs(20))
             .timeout(Duration::from_secs(45))
             .redirect(reqwest::redirect::Policy::custom(|attempt| {
@@ -140,15 +144,25 @@ impl Transport {
         .await
     }
     pub async fn resolve(&self, raw: &str, params: &[(&str, String)]) -> Result<Value> {
+        self.resolve_cancelled(raw, params, CancellationToken::new())
+            .await
+    }
+    pub async fn resolve_cancelled(
+        &self,
+        raw: &str,
+        params: &[(&str, String)],
+        cancel: CancellationToken,
+    ) -> Result<Value> {
         let url = url::Url::parse(raw).map_err(|_| Error::Malformed)?;
         if url.host_str() != Some("api-v2.soundcloud.com")
             || url.scheme() != "https"
             || !url.username().is_empty()
             || url.password().is_some()
+            || url.port().is_some_and(|p| p != 443)
         {
             return Err(Error::Malformed);
         }
-        self.request(raw, params, &CancellationToken::new()).await
+        self.request(raw, params, &cancel).await
     }
     async fn request(
         &self,
@@ -165,8 +179,16 @@ impl Transport {
             }
             let identifier = self.public_identifier(cancel).await?;
             let mut url = url::Url::parse(raw).map_err(|_| Error::Malformed)?;
+            // Cursors may contain an expired public identifier. Always replace it.
+            let retained = url
+                .query_pairs()
+                .filter(|(k, _)| k != "client_id")
+                .map(|(k, v)| (k.into_owned(), v.into_owned()))
+                .collect::<Vec<_>>();
+            url.set_query(None);
             {
                 let mut query = url.query_pairs_mut();
+                query.extend_pairs(retained);
                 for (k, v) in params {
                     query.append_pair(k, v);
                 }

@@ -172,7 +172,6 @@ export function Search({ navigate }: { navigate: (r: Route) => void }) {
     <div className="page">
       <header className="page-title">
         <div>
-          <span className="eyebrow">Explore a source</span>
           <h1>Search</h1>
         </div>
       </header>
@@ -218,7 +217,11 @@ export function Search({ navigate }: { navigate: (r: Route) => void }) {
           detail="Search the selected source’s public catalog."
         />
       ) : tab === "tracks" ? (
-        <TrackList tracks={data.tracks} navigate={navigate} />
+        <TrackList
+          tracks={data.tracks}
+          navigate={navigate}
+          listKey={`search:${provider}:${query}`}
+        />
       ) : (
         <div className="page-scroll">
           {tab === "artists" ? (

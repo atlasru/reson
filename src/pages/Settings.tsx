@@ -41,7 +41,6 @@ export function SettingsView() {
     <div className="page">
       <header className="page-title">
         <div>
-          <span className="eyebrow">Make Reson yours</span>
           <h1>Settings</h1>
         </div>
       </header>
@@ -214,7 +213,7 @@ export function SettingsView() {
           <h2>About</h2>
           <div className="setting-row">
             <div>
-              <strong>Reson 0.1.0</strong>
+              <strong>Reson 0.2.0</strong>
               <p>MIT · Windows desktop music player</p>
             </div>
             <button

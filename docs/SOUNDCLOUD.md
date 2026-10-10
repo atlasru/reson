@@ -70,3 +70,11 @@ deletes its temporary audio output. A shipped Windows executable supports
 `--smoke` for the same noninteractive check. CI executes it in both the
 portable and freshly installed builds. These commands require internet access
 and libmpv; normal unit tests never contact SoundCloud.
+
+## Public profile likes (v0.2.0)
+
+Verified live on 2026-10-10: the existing public web client resolves profiles via `/resolve`, and `/users/{numeric_id}/track_likes` returns like wrappers in `collection` and cursor URLs in `next_href`. Scott Buckley's public collection returned 46 tracks across 2 pages; the second page must still be requested even when the first page contains fewer than the requested 100 entries.
+
+Reson follows `next_href` without manufacturing offsets. Cursor URLs are restricted to the same API host, user and endpoint, and expired `client_id` parameters are replaced. No fixed track/page limit is imposed. Repeated cursors, invalid responses, inaccessible likes and downstream failures are reported as failed/partial. Deleted entries count as failures. Blocked/region-restricted metadata is retained as unavailable; playback continues to honor availability.
+
+Imports are local snapshots, independent of SoundCloud accounts. SQLite transactionally deduplicates provider-scoped IDs and records source memberships. Refresh adds entries while retaining tracks no longer remotely liked. Requests, public identifier discovery and cooldown waits accept cancellation. Already committed pages remain available offline. Incomplete jobs from a prior process are marked interrupted at startup.

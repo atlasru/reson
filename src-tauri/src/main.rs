@@ -44,9 +44,27 @@ fn main() {
             let logs = app.path().app_log_dir()?;
             app.manage(std::sync::Mutex::new(diagnostics::initialize(&logs)?));
             let storage = Storage::open(&data_dir.join("reson.sqlite"))?;
+            storage.recover_imports()?;
             let settings = storage.settings()?;
             let mut providers = ProviderRegistry::default();
             providers.register(Arc::new(SoundCloudProvider::new()?));
+            let imports = reson_core::library::imports::ImportManager::new(
+                storage.clone(),
+                providers.clone(),
+            );
+            let mut import_events = imports.subscribe();
+            let import_handle = app.handle().clone();
+            tauri::async_runtime::spawn(async move {
+                loop {
+                    match import_events.recv().await {
+                        Ok(progress) => {
+                            let _ = import_handle.emit("import-progress", progress);
+                        }
+                        Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => continue,
+                        Err(_) => break,
+                    }
+                }
+            });
             let native = app.path().resource_dir()?.join("libmpv-2.dll");
             let native_path = if cfg!(target_os = "windows") {
                 Some(native)
@@ -85,6 +103,7 @@ fn main() {
                 logs,
                 data_dir,
                 frontend_connected: Default::default(),
+                imports,
             };
             app.manage(state);
             let mut snapshots = player.state.clone();
@@ -137,6 +156,11 @@ fn main() {
             commands::queue_reorder,
             commands::queue_clear,
             commands::library_state,
+            commands::start_likes_import,
+            commands::cancel_likes_import,
+            commands::import_state,
+            commands::remove_import_source,
+            commands::remove_saved_track,
             commands::set_favorite,
             commands::create_playlist,
             commands::rename_playlist,

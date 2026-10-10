@@ -67,7 +67,7 @@ export function PlayerBar({
             </button>
             <button
               className={`icon ${liked ? "active" : ""}`}
-              title={liked ? "Remove Reson favorite" : "Favorite in Reson"}
+              title={liked ? "Remove from Reson likes" : "Like in Reson"}
               onClick={() => favorite(t.internal_id, !liked)}
             >
               <Heart size={18} fill={liked ? "currentColor" : "none"} />

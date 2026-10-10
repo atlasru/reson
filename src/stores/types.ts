@@ -74,6 +74,44 @@ export interface Library {
   favorites: Track[];
   recent: Track[];
   playlists: Playlist[];
+  local_favorite_ids: string[];
+  import_sources: ImportSource[];
+  import_track_sources: Record<string, string[]>;
+}
+export type ImportStatus =
+  | "resolving"
+  | "importing"
+  | "cooldown"
+  | "complete"
+  | "partial"
+  | "cancelled"
+  | "failed"
+  | "interrupted";
+export interface ImportProgress {
+  job_id: string;
+  source_id: string | null;
+  profile: string;
+  status: ImportStatus;
+  discovered: number;
+  saved: number;
+  duplicates: number;
+  failed: number;
+  unavailable: number;
+  pages: number;
+  retry_at: number | null;
+  message: string | null;
+}
+export interface ImportSource {
+  id: string;
+  provider: string;
+  provider_user_id: string;
+  url: string;
+  name: string;
+  artwork: string | null;
+  created_at: number;
+  refreshed_at: number | null;
+  track_count: number;
+  progress: ImportProgress | null;
 }
 export interface Settings {
   volume: number;
@@ -104,9 +142,10 @@ export interface AppSnapshot {
   providers: ProviderInfo[];
   installation: Installation;
   audio_error: string | null;
+  imports: ImportProgress[];
 }
 export type Route =
-  | { page: "home" | "search" | "library" | "playlists" | "settings" }
+  | { page: "home" | "search" | "library" | "liked" | "playlists" | "settings" }
   | { page: "artist"; provider: string; id: string }
   | { page: "playlist"; playlist: Playlist }
   | { page: "track"; track: Track };

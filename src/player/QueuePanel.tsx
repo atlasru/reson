@@ -19,7 +19,7 @@ export function QueuePanel({ close }: { close: () => void }) {
   const virtual = useVirtualizer({
     count: queue.entries.length,
     getScrollElement: () => parent.current,
-    estimateSize: () => 64,
+    estimateSize: () => 52,
     overscan: 5,
     getItemKey: (index) => queue.entries[index].entry_id,
   });
@@ -59,6 +59,7 @@ export function QueuePanel({ close }: { close: () => void }) {
                     height: row.size,
                     transform: `translateY(${row.start}px)`,
                   }}
+                  tabIndex={0}
                   draggable
                   onDragStart={(event) => {
                     setDragging(entry.entry_id);

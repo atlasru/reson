@@ -80,3 +80,9 @@ Structured JSON logs record categories, status codes and timing. They exclude
 queries, listening metadata, authorizations, access tokens and stream URLs.
 Three rotated local log files are retained. Settings exports bounded logs and
 app/platform information to a fixed application diagnostics directory.
+
+## Persistent imported collections (schema v2)
+
+`favorites` contains explicit local user likes. `import_sources` identifies a provider's public profile by `(provider, provider_user_id)` and stores the last progress/result. `import_tracks` records source membership separately from normalized metadata and the queue. `import_dismissals` prevents manually deleted source tracks from reappearing on refresh. The Liked Tracks view is the distinct union of local favorites and import memberships.
+
+`ImportManager` owns cancellable Tokio tasks, bounded concurrent jobs and broadcast progress. The provider interface exposes `PublicLikesImport`, profile normalization/resolution and paginated liked-track retrieval as optional operations. SQLite page writes run in blocking workers, serialized transactionally; a per-source active job prevents alias/concurrent imports from overwriting each other. The frontend observes progress and refreshes its library at a controlled cadence. Full playback state stays in the existing audio/player worker across page navigation.

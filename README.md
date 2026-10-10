@@ -1,8 +1,7 @@
 # Reson
 
 A desktop music player that brings multiple music sources into one queue,
-library and native playback engine. **v0.1.0 starts with SoundCloud guest
-access.** Windows 10/11 x64 · MIT application code.
+library and native playback engine. **v0.2.0 adds public SoundCloud likes importing and a compact desktop interface.** Windows 10/11 x64 · MIT application code.
 
 [Downloads](https://github.com/atlasru/reson/releases) ·
 [SoundCloud integration](docs/SOUNDCLOUD.md) ·
@@ -15,10 +14,10 @@ audio playback. [Queue screenshot](docs/images/reson-queue.png).
 
 ## Install
 
-Download `Reson_0.1.0_x64-setup.exe` from Releases and run it. The per-user
+Download `Reson_0.2.0_x64-setup.exe` from Releases and run it. The per-user
 installer does not require administrator privileges and installs WebView2
 when necessary. Or extract **all** files from
-`Reson_0.1.0_windows_x64_portable.zip`, then launch `Reson.exe`.
+`Reson_0.2.0_windows_x64_portable.zip`, then launch `Reson.exe`.
 
 Windows 10/11 x64 and an internet connection for SoundCloud are required.
 Builds are unsigned; Windows may show an unknown-publisher prompt. Installer
@@ -32,7 +31,8 @@ application data directory. Keep `libmpv-2.dll` beside the portable executable.
 - Native AAC HLS audio, pause/resume, seek, volume and audio-device selection.
 - Queue: add, play next, remove, drag/reorder, clear, previous/next, shuffle,
   repeat queue and repeat track. Duplicate tracks remain distinct entries.
-- Reson favorites, recent listening, local playlists and persistent queue,
+- Persistent public-profile likes imports: all accessible pages, cancellation, progress, deduplication, multiple sources and incremental refresh.
+- Reson local likes, recent listening, local playlists and persistent queue,
   position/settings. Restarts restore paused state without surprise autoplay.
 - Artist and playlist pages, artwork, context menus and virtualized lists.
 - Windows media keys/session metadata, plus desktop keyboard shortcuts.
@@ -40,13 +40,13 @@ application data directory. Keep `libmpv-2.dll` beside the portable executable.
 - Optional Discord Rich Presence through local desktop IPC, requiring a
   configured Discord application ID.
 
-| Provider | v0.1.0 support |
+| Provider | v0.2.0 support |
 | --- | --- |
 | SoundCloud | Public guest metadata/search/discovery/playback/users/playlists |
-| Yandex Music | Planned for v0.2 |
-| Local files | Planned for v0.3 |
+| Yandex Music | Planned |
+| Local files | Planned |
 
-SoundCloud login, provider likes/following/private library, Reson accounts,
+SoundCloud login, remote likes/following/private library, Reson accounts,
 Discord OAuth and library synchronization are **not delivered**. Reson local
 favorites/playlists are separate from a SoundCloud account. Public playback
 requires no Reson account. Premium or blocked tracks are not bypassed.
@@ -55,10 +55,14 @@ SoundCloud integration currently depends on its **undocumented public web
 API**. It can change without notice. All of this dependency is isolated in the
 SoundCloud provider; see [research and reliability limits](docs/SOUNDCLOUD.md).
 
+## Import SoundCloud likes
+
+Open **Liked Tracks → Import from SoundCloud**. Enter a username or an HTTPS profile URL. Tracks are saved incrementally in SQLite; cancelling or losing the network keeps committed pages. Sources exposes refresh, provenance and source removal. Refresh never deletes older imported tracks. Removing a track from Reson likes also dismisses it from future source refreshes. Imports do not modify remote likes. Hidden/private likes cannot be imported.
+
 ## Controls
 
-Double-click a track to play. Its action menu adds it to the queue, plays it
-next, favorites it or adds it to a local playlist. Queue entries support drag
+Single-click selects a track. Double-click or Enter plays it. Arrow keys move selection; Shift F10 opens its menu. Its action menu adds it to the queue, plays it
+next, likes it locally or adds it to a local playlist. Queue entries support drag
 reordering and accessible move/remove buttons. Minimize keeps music playing;
 closing exits the application and its audio worker.
 
@@ -108,7 +112,7 @@ archive; no SoundCloud secret or `.env` is required.
 ```powershell
 git clone https://github.com/atlasru/reson.git
 cd reson
-git switch feature/reson-v0.1.0
+git switch feature/reson-v0.2.0
 npm ci
 pwsh -File scripts/prepare-audio.ps1
 npm run tauri -- dev

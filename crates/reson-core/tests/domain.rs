@@ -200,13 +200,13 @@ fn newer_database_schema_is_rejected_without_modifying_user_data() {
     let temp = tempfile::tempdir().unwrap();
     let path = temp.path().join("state.sqlite");
     let conn = rusqlite::Connection::open(&path).unwrap();
-    conn.pragma_update(None, "user_version", 2).unwrap();
+    conn.pragma_update(None, "user_version", 3).unwrap();
     drop(conn);
     assert!(Storage::open(&path).is_err());
     let conn = rusqlite::Connection::open(path).unwrap();
     assert_eq!(
         conn.query_row::<i64, _, _>("PRAGMA user_version", [], |r| r.get(0))
             .unwrap(),
-        2
+        3
     );
 }

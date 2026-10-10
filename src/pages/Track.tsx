@@ -88,7 +88,7 @@ export function TrackView({
             </button>
             <button
               className={`icon ${liked ? "active" : ""}`}
-              title="Reson favorite"
+              title="Like in Reson"
               onClick={() => favorite(track.internal_id, !liked)}
             >
               <Heart size={19} fill={liked ? "currentColor" : "none"} />

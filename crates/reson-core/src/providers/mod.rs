@@ -22,6 +22,7 @@ pub enum Capability {
     Authentication,
     Likes,
     LibraryWrite,
+    PublicLikesImport,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -35,6 +36,24 @@ pub struct ProviderInfo {
 #[async_trait]
 pub trait MusicProvider: Send + Sync {
     fn info(&self) -> ProviderInfo;
+    fn normalize_profile_input(&self, _input: &str) -> Result<String> {
+        Err(Error::Unsupported("public likes import"))
+    }
+    async fn public_profile(
+        &self,
+        _input: &str,
+        _cancel: CancellationToken,
+    ) -> Result<crate::library::imports::ImportProfile> {
+        Err(Error::Unsupported("public likes import"))
+    }
+    async fn liked_tracks_page(
+        &self,
+        _id: &str,
+        _cursor: Option<&str>,
+        _cancel: CancellationToken,
+    ) -> Result<crate::library::imports::LikesPage> {
+        Err(Error::Unsupported("public likes import"))
+    }
     fn artwork_hosts(&self) -> &'static [&'static str] {
         &[]
     }
