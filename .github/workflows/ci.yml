@@ -1,0 +1,226 @@
+name: Build and validate Reson
+on:
+  push:
+    branches: [main, 'feature/**']
+    tags: ['v*']
+  pull_request:
+    types: [opened, reopened, synchronize]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: reson-${{ github.workflow }}-${{ github.event_name }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+  core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: '1.99.0'
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+      - run: cargo fmt --all --check
+      - run: cargo clippy -p reson-core --all-targets --locked -- -D warnings
+      - run: cargo test -p reson-core --locked
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: '1.99.0'
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+      - run: npm ci
+      - run: pwsh -File scripts/prepare-audio.ps1
+      - run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - run: cargo test --workspace --locked
+      - run: python scripts/collect-notices.py
+      - name: Real SoundCloud native core probe
+        shell: pwsh
+        run: |
+          cargo build -p reson-core --example provider_probe --locked
+          if ($LASTEXITCODE -ne 0) { throw 'Native probe build failed' }
+          Copy-Item src-tauri/resources/libmpv-2.dll target/debug/examples/
+          & target/debug/examples/provider_probe.exe
+          if ($LASTEXITCODE -ne 0) { throw 'Native probe failed' }
+      - run: npm run tauri -- build --target x86_64-pc-windows-msvc --bundles nsis
+      - name: Assemble portable build
+        shell: pwsh
+        run: |
+          $out = 'target/x86_64-pc-windows-msvc/release'
+          New-Item -ItemType Directory -Force portable | Out-Null
+          Copy-Item "$out/reson.exe" portable/Reson.exe
+          Copy-Item src-tauri/resources/libmpv-2.dll portable/
+          Copy-Item src-tauri/resources/THIRD_PARTY_NOTICES.md portable/
+          Copy-Item src-tauri/resources/licenses portable/ -Recurse
+          Copy-Item LICENSE portable/
+          Compress-Archive -Path portable/* -DestinationPath Reson_0.2.0_windows_x64_portable.zip
+          Copy-Item (Get-ChildItem "$out/bundle/nsis/*setup.exe" | Select-Object -First 1).FullName Reson_0.2.0_x64-setup.exe
+          Get-FileHash Reson_0.2.0_windows_x64_portable.zip,Reson_0.2.0_x64-setup.exe -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLowerInvariant())  $(Split-Path $_.Path -Leaf)" } | Set-Content SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Reson-windows-x64
+          path: |
+            Reson_0.2.0_x64-setup.exe
+            Reson_0.2.0_windows_x64_portable.zip
+            SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 30
+      - name: Native DLL smoke test with real SoundCloud
+        shell: pwsh
+        run: |
+          $process = Start-Process -FilePath "$PWD/portable/Reson.exe" -ArgumentList '--smoke' -Wait -PassThru -RedirectStandardOutput smoke.txt -RedirectStandardError smoke-error.txt
+          Get-Content smoke.txt
+          Get-Content smoke-error.txt
+          if ($process.ExitCode -ne 0) { throw "Native SoundCloud smoke test failed: $($process.ExitCode)" }
+      - name: Fresh installation and installed playback validation
+        shell: pwsh
+        run: |
+          $installDir = Join-Path $env:RUNNER_TEMP 'reson-install'
+          $installer = Start-Process -FilePath "$PWD/Reson_0.2.0_x64-setup.exe" -ArgumentList '/S', "/D=$installDir" -Wait -PassThru
+          if ($installer.ExitCode -ne 0) { throw "Installer failed: $($installer.ExitCode)" }
+          $app = Join-Path $installDir 'reson.exe'
+          if (-not (Test-Path $app)) { throw 'Installed application missing' }
+          if (-not (Test-Path (Join-Path $installDir 'libmpv-2.dll'))) { throw 'Installed audio library missing' }
+          $process = Start-Process -FilePath $app -ArgumentList '--smoke' -Wait -PassThru -RedirectStandardOutput installed-smoke.txt -RedirectStandardError installed-smoke-error.txt
+          Get-Content installed-smoke.txt
+          Get-Content installed-smoke-error.txt
+          if ($process.ExitCode -ne 0) { throw "Installed native playback failed: $($process.ExitCode)" }
+      - name: Installed desktop startup and clean window exit
+        shell: pwsh
+        run: |
+          $appPath = Join-Path $env:RUNNER_TEMP 'reson-install/reson.exe'
+          $logDirs = @(
+            (Join-Path $env:LOCALAPPDATA 'dev.atlas.reson/logs'),
+            (Join-Path $env:APPDATA 'dev.atlas.reson/logs')
+          )
+          $app = Start-Process -FilePath $appPath -PassThru
+          try {
+            $ready = $false
+            for ($attempt = 0; $attempt -lt 120; $attempt++) {
+              $app.Refresh()
+              if ($app.HasExited) { throw "Desktop exited during startup: $($app.ExitCode)" }
+              $logFiles = @($logDirs | Where-Object { Test-Path $_ } | ForEach-Object { Get-ChildItem $_ -Filter '*.jsonl' })
+              $connected = @($logFiles | Select-String -SimpleMatch 'Desktop UI connected').Count -gt 0
+              if ($app.MainWindowHandle -ne 0 -and $connected) { $ready = $true; break }
+              Start-Sleep -Milliseconds 500
+            }
+            if (-not $ready) { throw 'Installed desktop window/frontend did not initialize' }
+            if (@($logFiles | Select-String -SimpleMatch 'native audio initialization failed').Count -gt 0) { throw 'Desktop native audio initialization failed' }
+            'Installed native window and React/core IPC initialized.' | Tee-Object desktop-startup.txt
+            if (-not $app.CloseMainWindow()) { throw 'Could not close the desktop window' }
+            if (-not $app.WaitForExit(15000)) { throw 'Closing the window left the application running' }
+            if ($app.ExitCode -ne 0) { throw "Desktop exit failed: $($app.ExitCode)" }
+            'Closing the desktop window exited normally.' | Tee-Object -Append desktop-startup.txt
+          } finally {
+            if (-not $app.HasExited) { Stop-Process -Id $app.Id -Force }
+          }
+      - name: Validate release desktop UI and capture screenshots
+        shell: pwsh
+        run: |
+          cargo install tauri-driver --locked --version 2.1.0
+          if ($LASTEXITCODE -ne 0) { throw 'tauri-driver install failed' }
+          $runtime = Get-ChildItem 'C:/Program Files (x86)/Microsoft/EdgeWebView/Application' -Filter msedgewebview2.exe -Recurse | Sort-Object { [version]$_.VersionInfo.ProductVersion } -Descending | Select-Object -First 1
+          if (-not $runtime) { throw 'WebView2 runtime not found' }
+          $edge = $runtime.VersionInfo.ProductVersion
+          Write-Output "Using EdgeDriver for WebView2 $edge"
+          Invoke-WebRequest -Uri "https://msedgedriver.microsoft.com/$edge/edgedriver_win64.zip" -OutFile edgedriver.zip
+          Expand-Archive edgedriver.zip -DestinationPath edgedriver -Force
+          $driver = Start-Process -FilePath "$env:USERPROFILE/.cargo/bin/tauri-driver.exe" -ArgumentList '--native-driver', "$PWD/edgedriver/msedgedriver.exe" -PassThru -RedirectStandardOutput webdriver.txt -RedirectStandardError webdriver-error.txt
+          # WebView2 150+ ignores environment overrides for elevated hosts.
+          # GitHub's Windows runner is elevated. Scope temporary test policy to
+          # this executable, then restore it; the shipped app is unchanged.
+          # https://github.com/MicrosoftEdge/WebView2Feedback/issues/5645
+          $policyRoot = 'HKLM:/Software/Policies/Microsoft/Edge/WebView2'
+          $policyName = 'Reson.exe'
+          $policies = @{
+            AdditionalBrowserArguments = '--remote-debugging-port=9222 --remote-debugging-address=127.0.0.1'
+            UserDataFolder = (Join-Path $PWD '.smoke/webview-profile')
+          }
+          $previousPolicies = @()
+          try {
+            foreach ($name in $policies.Keys) {
+              $key = Join-Path $policyRoot $name
+              $existed = Test-Path $key
+              $old = if ($existed) { (Get-Item $key).GetValue($policyName) } else { $null }
+              $previousPolicies += @{ Key = $key; Existed = $existed; Value = $old }
+              New-Item -Path $key -Force | Out-Null
+              New-ItemProperty -Path $key -Name $policyName -Value $policies[$name] -PropertyType String -Force | Out-Null
+            }
+            # The runner has no hardware audio endpoint. Decode/play through
+            # libmpv's explicit native null device; PCM energy is independently
+            # checked above from both portable and freshly installed builds.
+            python scripts/validate-redesign.py --application "$PWD/portable/Reson.exe" --audio-device null --output .smoke/redesign
+            if ($LASTEXITCODE -ne 0) { throw 'Production desktop validation failed' }
+          } finally {
+            if (-not $driver.HasExited) { Stop-Process -Id $driver.Id -Force }
+            foreach ($old in $previousPolicies) {
+              if ($null -ne $old.Value) {
+                New-ItemProperty -Path $old.Key -Name $policyName -Value $old.Value -PropertyType String -Force | Out-Null
+              } else {
+                Remove-ItemProperty -Path $old.Key -Name $policyName -ErrorAction SilentlyContinue
+              }
+              if (-not $old.Existed) { Remove-Item -Path $old.Key -ErrorAction SilentlyContinue }
+            }
+          }
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Reson-production-screenshots
+          path: .smoke/redesign/
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Reson-validation
+          path: |
+            smoke.txt
+            smoke-error.txt
+            installed-smoke.txt
+            installed-smoke-error.txt
+            desktop-startup.txt
+            webdriver.txt
+            webdriver-error.txt
+  release:
+    needs: [frontend, core, windows]
+    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'push' && startsWith(github.event.head_commit.message, 'release:'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: Reson-windows-x64
+          path: release-files
+      - name: Verify and publish v0.2.0
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd release-files
+          sha256sum --check SHA256SUMS.txt
+          gh release create v0.2.0 Reson_0.2.0_x64-setup.exe Reson_0.2.0_windows_x64_portable.zip SHA256SUMS.txt --target "$GITHUB_SHA" --title 'Reson v0.2.0' --notes-file ../docs/RELEASE_NOTES.md

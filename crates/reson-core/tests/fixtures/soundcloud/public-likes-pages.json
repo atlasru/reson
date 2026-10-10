@@ -1,0 +1,1319 @@
+[
+  {
+    "collection": [
+      {
+        "created_at": "2021-04-24T10:13:22Z",
+        "track": {
+          "id": 743827402,
+          "urn": "soundcloud:tracks:743827402",
+          "kind": "track",
+          "title": "SAPPHIRE EYES(Radio Mix)",
+          "duration": 313913,
+          "full_duration": 313913,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": "https://i1.sndcdn.com/artworks-itRbyXXkSoT2EIaL-OWS9cQ-large.jpg",
+          "permalink_url": "https://soundcloud.com/bernhardhagen/sapphire-eyes-radio-mix",
+          "publisher_metadata": {
+            "id": 743827402,
+            "urn": "soundcloud:tracks:743827402",
+            "artist": "TheCat&Razor",
+            "album_title": "Original Songs",
+            "contains_music": true,
+            "explicit": false
+          },
+          "user": {
+            "id": 449134440,
+            "urn": "soundcloud:users:449134440",
+            "kind": "user",
+            "username": "BernhardHagen",
+            "permalink_url": "https://soundcloud.com/bernhardhagen",
+            "avatar_url": "https://i1.sndcdn.com/avatars-qjjzwZtZx8YxVlze-jwBjxA-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2021-01-31T13:33:07Z",
+        "track": {
+          "id": 297579497,
+          "urn": "soundcloud:tracks:297579497",
+          "kind": "track",
+          "title": "Ultima",
+          "duration": 277677,
+          "full_duration": 277732,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000198126564-933esn-large.jpg",
+          "permalink_url": "https://soundcloud.com/masterbootrecordmusic/ultima",
+          "publisher_metadata": {
+            "id": 297579497,
+            "urn": "soundcloud:tracks:297579497"
+          },
+          "user": {
+            "id": 254046890,
+            "urn": "soundcloud:users:254046890",
+            "kind": "user",
+            "username": "MASTER BOOT RECORD",
+            "permalink_url": "https://soundcloud.com/masterbootrecordmusic",
+            "avatar_url": "https://i1.sndcdn.com/avatars-000260273891-ba02ol-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2021-01-31T13:32:23Z",
+        "track": {
+          "id": 460975167,
+          "urn": "soundcloud:tracks:460975167",
+          "kind": "track",
+          "title": "Monkey Island",
+          "duration": 260455,
+          "full_duration": 260490,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000363075642-1v70xa-large.jpg",
+          "permalink_url": "https://soundcloud.com/masterbootrecordmusic/monkey-island",
+          "publisher_metadata": {
+            "id": 460975167,
+            "urn": "soundcloud:tracks:460975167"
+          },
+          "user": {
+            "id": 254046890,
+            "urn": "soundcloud:users:254046890",
+            "kind": "user",
+            "username": "MASTER BOOT RECORD",
+            "permalink_url": "https://soundcloud.com/masterbootrecordmusic",
+            "avatar_url": "https://i1.sndcdn.com/avatars-000260273891-ba02ol-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2020-07-24T11:09:56Z",
+        "track": {
+          "id": 838919956,
+          "urn": "soundcloud:tracks:838919956",
+          "kind": "track",
+          "title": "Hiraeth (CC-BY)",
+          "duration": 346244,
+          "full_duration": 346227,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": "https://i1.sndcdn.com/artworks-tGMzyGSzRbPNr8kd-SzyXmQ-large.jpg",
+          "permalink_url": "https://soundcloud.com/scottbuckley/hiraeth-cc-by",
+          "publisher_metadata": {
+            "id": 838919956,
+            "urn": "soundcloud:tracks:838919956",
+            "artist": "Scott Buckley",
+            "contains_music": true,
+            "isrc": "AUZVV1900085"
+          },
+          "user": {
+            "id": 1109382,
+            "urn": "soundcloud:users:1109382",
+            "kind": "user",
+            "username": "Scott Buckley",
+            "permalink_url": "https://soundcloud.com/scottbuckley",
+            "avatar_url": "https://i1.sndcdn.com/avatars-eznlVdjSz0RD45fM-zjk4yA-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2020-02-07T12:30:03Z",
+        "track": {
+          "id": 748582474,
+          "urn": "soundcloud:tracks:748582474",
+          "kind": "track",
+          "title": "Moments Together",
+          "duration": 211431,
+          "full_duration": 211435,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000673285954-4a2f6e-large.jpg",
+          "permalink_url": "https://soundcloud.com/dimatis/moments-together",
+          "publisher_metadata": {
+            "id": 748582474,
+            "urn": "soundcloud:tracks:748582474",
+            "artist": "Dimatis",
+            "album_title": "Experiences",
+            "contains_music": true,
+            "isrc": "GBSMU7434217",
+            "explicit": false
+          },
+          "user": {
+            "id": 64728437,
+            "urn": "soundcloud:users:64728437",
+            "kind": "user",
+            "username": "Dimatis",
+            "permalink_url": "https://soundcloud.com/dimatis",
+            "avatar_url": "https://i1.sndcdn.com/avatars-jCPWJa3sRN1w1vGN-zqmkzw-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2019-12-12T20:03:53Z",
+        "track": {
+          "id": 706084336,
+          "urn": "soundcloud:tracks:706084336",
+          "kind": "track",
+          "title": "Shortax - Paranormal Powers",
+          "duration": 372108,
+          "full_duration": 372088,
+          "streamable": true,
+          "policy": "ALLOW",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000627686998-e1k6da-large.jpg",
+          "permalink_url": "https://soundcloud.com/benjaminolsen/shortax-paranormal-powers",
+          "publisher_metadata": {
+            "id": 706084336,
+            "urn": "soundcloud:tracks:706084336",
+            "contains_music": true
+          },
+          "user": {
+            "id": 3876415,
+            "urn": "soundcloud:users:3876415",
+            "kind": "user",
+            "username": "Shortax",
+            "permalink_url": "https://soundcloud.com/benjaminolsen",
+            "avatar_url": "https://i1.sndcdn.com/avatars-oUXIH9b0igi8Q87R-QMhRfQ-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2019-11-24T23:49:35Z",
+        "track": {
+          "id": 709863862,
+          "urn": "soundcloud:tracks:709863862",
+          "kind": "track",
+          "title": "Scott Buckley - Filaments (Patros15 Rework)",
+          "duration": 309046,
+          "full_duration": 309029,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000634294600-d9ot7i-large.jpg",
+          "permalink_url": "https://soundcloud.com/patros15/scott-buckley-filaments-patros15-remix",
+          "publisher_metadata": {
+            "id": 709863862,
+            "urn": "soundcloud:tracks:709863862",
+            "artist": "Patros15, Scott Buckley",
+            "contains_music": true,
+            "isrc": "QZJRC2202065",
+            "explicit": false,
+            "writer_composer": "Patrik Ja\u0161\u0161o, Scott Buckley",
+            "release_title": "Filaments (Patros15 Rework)"
+          },
+          "user": {
+            "id": 85863636,
+            "urn": "soundcloud:users:85863636",
+            "kind": "user",
+            "username": "Patros15",
+            "permalink_url": "https://soundcloud.com/patros15",
+            "avatar_url": "https://i1.sndcdn.com/avatars-Bn11q19cv8mDYcVG-DX5C9Q-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2019-09-17T07:35:23Z",
+        "track": {
+          "id": 205155516,
+          "urn": "soundcloud:tracks:205155516",
+          "kind": "track",
+          "title": "The Prototypes - Slip Away",
+          "duration": 212433,
+          "full_duration": 212499,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000116549116-0vt2bq-large.jpg",
+          "permalink_url": "https://soundcloud.com/mrsuicidesheep/the-prototypes-slip-away",
+          "publisher_metadata": {
+            "id": 205155516,
+            "urn": "soundcloud:tracks:205155516"
+          },
+          "user": {
+            "id": 3399796,
+            "urn": "soundcloud:users:3399796",
+            "kind": "user",
+            "username": "MrSuicideSheep",
+            "permalink_url": "https://soundcloud.com/mrsuicidesheep",
+            "avatar_url": "https://i1.sndcdn.com/avatars-000528379689-l45x8x-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2019-08-06T20:13:20Z",
+        "track": {
+          "id": 560871258,
+          "urn": "soundcloud:tracks:560871258",
+          "kind": "track",
+          "title": "Somewhere Over The Rainbow Cover",
+          "duration": 120183,
+          "full_duration": 120200,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000473829819-l86iwe-large.jpg",
+          "permalink_url": "https://soundcloud.com/erinh08/somewhere-over-the-rainbow-cover",
+          "publisher_metadata": {
+            "id": 560871258,
+            "urn": "soundcloud:tracks:560871258",
+            "contains_music": true
+          },
+          "user": {
+            "id": 94071735,
+            "urn": "soundcloud:users:94071735",
+            "kind": "user",
+            "username": "erinh.08",
+            "permalink_url": "https://soundcloud.com/erinh08",
+            "avatar_url": "https://i1.sndcdn.com/avatars-yHStTLX0Sa6FVJoH-sZbzzQ-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2019-06-18T11:17:47Z",
+        "track": {
+          "id": 638420910,
+          "urn": "soundcloud:tracks:638420910",
+          "kind": "track",
+          "title": "Shards - Summer Sickness",
+          "duration": 231000,
+          "full_duration": 231048,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000553771851-t2ioh0-large.jpg",
+          "permalink_url": "https://soundcloud.com/erasedtapes/shards-summer-sickness",
+          "publisher_metadata": {
+            "id": 638420910,
+            "urn": "soundcloud:tracks:638420910",
+            "artist": "Shards",
+            "album_title": "Find Sound",
+            "contains_music": true,
+            "publisher": "Decca Publishing",
+            "isrc": "GBWZD1912402",
+            "explicit": false,
+            "p_line": "2019 Erased Tapes Records Ltd.",
+            "p_line_for_display": "\u2117 2019 Erased Tapes Records Ltd.",
+            "writer_composer": "Kieran Brunt",
+            "release_title": "Summer Sickness"
+          },
+          "user": {
+            "id": 188998,
+            "urn": "soundcloud:users:188998",
+            "kind": "user",
+            "username": "Erased Tapes",
+            "permalink_url": "https://soundcloud.com/erasedtapes",
+            "avatar_url": "https://i1.sndcdn.com/avatars-Uy8Up7BiRc73b2sO-y41Fsg-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2019-02-19T21:36:41Z",
+        "track": {
+          "id": 493337130,
+          "urn": "soundcloud:tracks:493337130",
+          "kind": "track",
+          "title": "Evening / June",
+          "duration": 207917,
+          "full_duration": 207953,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000397738866-6ev0ry-large.jpg",
+          "permalink_url": "https://soundcloud.com/rossbugden/evening-june",
+          "publisher_metadata": {
+            "id": 493337130,
+            "urn": "soundcloud:tracks:493337130"
+          },
+          "user": {
+            "id": 72339953,
+            "urn": "soundcloud:users:72339953",
+            "kind": "user",
+            "username": "Ross Bugden",
+            "permalink_url": "https://soundcloud.com/rossbugden",
+            "avatar_url": "https://i1.sndcdn.com/avatars-y4PVchmLCiqtfiZ5-HFjipg-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2019-02-10T15:34:49Z",
+        "track": {
+          "id": 512836416,
+          "urn": "soundcloud:tracks:512836416",
+          "kind": "track",
+          "title": "Western Theme? - WIP",
+          "duration": 146552,
+          "full_duration": 146586,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": null,
+          "permalink_url": "https://soundcloud.com/don-stroganotti/western-theme-wip",
+          "publisher_metadata": {
+            "id": 512836416,
+            "urn": "soundcloud:tracks:512836416",
+            "contains_music": true
+          },
+          "user": {
+            "id": 109453068,
+            "urn": "soundcloud:users:109453068",
+            "kind": "user",
+            "username": "Don Stroganotti",
+            "permalink_url": "https://soundcloud.com/don-stroganotti",
+            "avatar_url": "https://i1.sndcdn.com/avatars-000183106173-ewkevj-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2019-02-01T18:51:33Z",
+        "track": {
+          "id": 560007489,
+          "urn": "soundcloud:tracks:560007489",
+          "kind": "track",
+          "title": "Lullaby (feat. Yung Neanderthal)",
+          "duration": 185590,
+          "full_duration": 185590,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000472834017-j605yk-large.jpg",
+          "permalink_url": "https://soundcloud.com/lostamidead/lullaby-feat-yung-neanderthal",
+          "publisher_metadata": {
+            "id": 560007489,
+            "urn": "soundcloud:tracks:560007489",
+            "contains_music": true
+          },
+          "user": {
+            "id": 434215746,
+            "urn": "soundcloud:users:434215746",
+            "kind": "user",
+            "username": "FILIP",
+            "permalink_url": "https://soundcloud.com/lostamidead",
+            "avatar_url": "https://i1.sndcdn.com/avatars-DiUXwmSFGWcDzyJR-zmJsaw-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2019-01-21T12:00:24Z",
+        "track": {
+          "id": 493471416,
+          "urn": "soundcloud:tracks:493471416",
+          "kind": "track",
+          "title": "Solos of the Sea - Solo Violin A, Oceania, & Others - Crossing Above the Azure - by Henri Vartio",
+          "duration": 233872,
+          "full_duration": 233921,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000398741139-sage5b-large.jpg",
+          "permalink_url": "https://soundcloud.com/performancesamples/solos-of-the-sea-solo-violin-a-special-guests-crossing-above-the-azure-by-henri-vartio",
+          "publisher_metadata": {
+            "id": 493471416,
+            "urn": "soundcloud:tracks:493471416"
+          },
+          "user": {
+            "id": 291489438,
+            "urn": "soundcloud:users:291489438",
+            "kind": "user",
+            "username": "Performance Samples",
+            "permalink_url": "https://soundcloud.com/performancesamples",
+            "avatar_url": "https://i1.sndcdn.com/avatars-000298372701-us8isz-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2019-01-15T20:01:12Z",
+        "track": {
+          "id": 558018141,
+          "urn": "soundcloud:tracks:558018141",
+          "kind": "track",
+          "title": "Survivor (Harry Potter main themes)",
+          "duration": 172689,
+          "full_duration": 172710,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000470898045-gnko73-large.jpg",
+          "permalink_url": "https://soundcloud.com/user-935753663/survivor",
+          "publisher_metadata": {
+            "id": 558018141,
+            "urn": "soundcloud:tracks:558018141",
+            "contains_music": true
+          },
+          "user": {
+            "id": 286018066,
+            "urn": "soundcloud:users:286018066",
+            "kind": "user",
+            "username": "V.V.music",
+            "permalink_url": "https://soundcloud.com/user-935753663",
+            "avatar_url": "https://i1.sndcdn.com/avatars-ijewzlIvV1AzFyVS-dvJBBA-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2019-01-03T21:19:07Z",
+        "track": {
+          "id": 14150003,
+          "urn": "soundcloud:tracks:14150003",
+          "kind": "track",
+          "title": "8Dio Epic Dhol Ensemble \"So It Begins\" (naked) by Troels Folmann",
+          "duration": 90090,
+          "full_duration": 90130,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000024928619-qdn36n-large.jpg",
+          "permalink_url": "https://soundcloud.com/8dioproductions/epic-dhol-ensemble-so-it-1",
+          "publisher_metadata": null,
+          "user": {
+            "id": 1333147,
+            "urn": "soundcloud:users:1333147",
+            "kind": "user",
+            "username": "8dio.productions",
+            "permalink_url": "https://soundcloud.com/8dioproductions",
+            "avatar_url": "https://i1.sndcdn.com/avatars-zyubf9q4JNuuRE2c-EtOpdA-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2019-01-03T19:15:41Z",
+        "track": {
+          "id": 553129137,
+          "urn": "soundcloud:tracks:553129137",
+          "kind": "track",
+          "title": "The Greatest Showman - Never Enough (Remake)",
+          "duration": 205473,
+          "full_duration": 205498,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000466302702-b572wf-large.jpg",
+          "permalink_url": "https://soundcloud.com/user-935753663/the-greatest-showman-never-enough-remake",
+          "publisher_metadata": {
+            "id": 553129137,
+            "urn": "soundcloud:tracks:553129137",
+            "contains_music": true
+          },
+          "user": {
+            "id": 286018066,
+            "urn": "soundcloud:users:286018066",
+            "kind": "user",
+            "username": "V.V.music",
+            "permalink_url": "https://soundcloud.com/user-935753663",
+            "avatar_url": "https://i1.sndcdn.com/avatars-ijewzlIvV1AzFyVS-dvJBBA-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2018-12-09T12:35:04Z",
+        "track": {
+          "id": 162475701,
+          "urn": "soundcloud:tracks:162475701",
+          "kind": "track",
+          "title": "Beyond Good & Evil - Home Sweet Home Remix [Demo 2]",
+          "duration": 120187,
+          "full_duration": 120226,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000087633547-4m8rkw-large.jpg",
+          "permalink_url": "https://soundcloud.com/digiskai/beyond-good-evil-home-sweet-home-remix-demo-2",
+          "publisher_metadata": null,
+          "user": {
+            "id": 1866571,
+            "urn": "soundcloud:users:1866571",
+            "kind": "user",
+            "username": "digiskai",
+            "permalink_url": "https://soundcloud.com/digiskai",
+            "avatar_url": "https://i1.sndcdn.com/avatars-000001843771-ig9va9-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2018-10-07T18:28:36Z",
+        "track": {
+          "id": 508414041,
+          "urn": "soundcloud:tracks:508414041",
+          "kind": "track",
+          "title": "O Holy Night - DEMO",
+          "duration": 220598,
+          "full_duration": 220623,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000415086357-0trjj0-large.jpg",
+          "permalink_url": "https://soundcloud.com/london-music-works/o-holy-night-demo",
+          "publisher_metadata": {
+            "id": 508414041,
+            "urn": "soundcloud:tracks:508414041",
+            "artist": "London Music Works",
+            "contains_music": true,
+            "writer_composer": ""
+          },
+          "user": {
+            "id": 99211995,
+            "urn": "soundcloud:users:99211995",
+            "kind": "user",
+            "username": "London Music Works",
+            "permalink_url": "https://soundcloud.com/london-music-works",
+            "avatar_url": "https://i1.sndcdn.com/avatars-000093025630-aynkps-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2018-05-30T07:46:53Z",
+        "track": {
+          "id": 450611232,
+          "urn": "soundcloud:tracks:450611232",
+          "kind": "track",
+          "title": "Boy",
+          "duration": 182686,
+          "full_duration": 182717,
+          "streamable": true,
+          "policy": "ALLOW",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000353991126-holt00-large.jpg",
+          "permalink_url": "https://soundcloud.com/keithkenniff/boy",
+          "publisher_metadata": {
+            "id": 450611232,
+            "urn": "soundcloud:tracks:450611232"
+          },
+          "user": {
+            "id": 176726,
+            "urn": "soundcloud:users:176726",
+            "kind": "user",
+            "username": "Keith Kenniff",
+            "permalink_url": "https://soundcloud.com/keithkenniff",
+            "avatar_url": "https://i1.sndcdn.com/avatars-UkgBdsKuyV3c2U1j-eP76nw-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2018-05-19T23:44:08Z",
+        "track": {
+          "id": 444981150,
+          "urn": "soundcloud:tracks:444981150",
+          "kind": "track",
+          "title": "Ski Sunday - Strings & Picc Only",
+          "duration": 124876,
+          "full_duration": 124876,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": null,
+          "permalink_url": "https://soundcloud.com/london-music-works/ski-sunday-strings-picc-only",
+          "publisher_metadata": {
+            "id": 444981150,
+            "urn": "soundcloud:tracks:444981150"
+          },
+          "user": {
+            "id": 99211995,
+            "urn": "soundcloud:users:99211995",
+            "kind": "user",
+            "username": "London Music Works",
+            "permalink_url": "https://soundcloud.com/london-music-works",
+            "avatar_url": "https://i1.sndcdn.com/avatars-000093025630-aynkps-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2018-04-21T23:14:11Z",
+        "track": {
+          "id": 421881945,
+          "urn": "soundcloud:tracks:421881945",
+          "kind": "track",
+          "title": "Evolution",
+          "duration": 228096,
+          "full_duration": 228096,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000327010842-8b7ih2-large.jpg",
+          "permalink_url": "https://soundcloud.com/london-music-works/evolution",
+          "publisher_metadata": {
+            "id": 421881945,
+            "urn": "soundcloud:tracks:421881945"
+          },
+          "user": {
+            "id": 99211995,
+            "urn": "soundcloud:users:99211995",
+            "kind": "user",
+            "username": "London Music Works",
+            "permalink_url": "https://soundcloud.com/london-music-works",
+            "avatar_url": "https://i1.sndcdn.com/avatars-000093025630-aynkps-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2017-11-21T20:41:50Z",
+        "track": {
+          "id": 348144849,
+          "urn": "soundcloud:tracks:348144849",
+          "kind": "track",
+          "title": "Ghetto Lee Lewis - 06 Vengeful Requiem",
+          "duration": 155226,
+          "full_duration": 155260,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000248416832-5931tv-large.jpg",
+          "permalink_url": "https://soundcloud.com/ocremix/ghetto-lee-lewis-06-vengeful",
+          "publisher_metadata": {
+            "id": 348144849,
+            "urn": "soundcloud:tracks:348144849",
+            "artist": "Ghetto Lee Lewis",
+            "album_title": "Heretic Sinphony"
+          },
+          "user": {
+            "id": 1852836,
+            "urn": "soundcloud:users:1852836",
+            "kind": "user",
+            "username": "OverClocked ReMix",
+            "permalink_url": "https://soundcloud.com/ocremix",
+            "avatar_url": "https://i1.sndcdn.com/avatars-000158653432-q5dax6-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2017-11-21T20:39:10Z",
+        "track": {
+          "id": 355917692,
+          "urn": "soundcloud:tracks:355917692",
+          "kind": "track",
+          "title": "Deus Ex Mankind Divded 101 Trailer Music",
+          "duration": 351566,
+          "full_duration": 351613,
+          "streamable": true,
+          "policy": "ALLOW",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000256261658-yp6jq1-large.jpg",
+          "permalink_url": "https://soundcloud.com/sonicmayhem/deus-ex-mankind-divded-101-trailer-music",
+          "publisher_metadata": {
+            "id": 355917692,
+            "urn": "soundcloud:tracks:355917692",
+            "artist": "Sascha Dikiciyan",
+            "publisher": "Eidos Interactive",
+            "writer_composer": "Sascha Dikiciyan"
+          },
+          "user": {
+            "id": 1869629,
+            "urn": "soundcloud:users:1869629",
+            "kind": "user",
+            "username": "Sonic Mayhem",
+            "permalink_url": "https://soundcloud.com/sonicmayhem",
+            "avatar_url": "https://i1.sndcdn.com/avatars-hgs6jiGPYhKDe3ZF-m2nUQw-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2017-08-25T22:08:06Z",
+        "track": {
+          "id": 331112758,
+          "urn": "soundcloud:tracks:331112758",
+          "kind": "track",
+          "title": "FiresideChat5 - W-Orchestrator AlastairKing - Version2",
+          "duration": 2682817,
+          "full_duration": 2682817,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": null,
+          "permalink_url": "https://soundcloud.com/frederickruss/firesidechat5-w-orchestrator-alastairking-version2",
+          "publisher_metadata": {
+            "id": 331112758,
+            "urn": "soundcloud:tracks:331112758"
+          },
+          "user": {
+            "id": 962220,
+            "urn": "soundcloud:users:962220",
+            "kind": "user",
+            "username": "Frederick Alexander Russ",
+            "permalink_url": "https://soundcloud.com/frederickruss",
+            "avatar_url": "https://i1.sndcdn.com/avatars-3fuOuqR1sJnHztdz-5iDSNA-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2017-08-03T07:20:25Z",
+        "track": {
+          "id": 326500290,
+          "urn": "soundcloud:tracks:326500290",
+          "kind": "track",
+          "title": "The End - Orchestral Drama",
+          "duration": 492113,
+          "full_duration": 492113,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000226504761-nl4boo-large.jpg",
+          "permalink_url": "https://soundcloud.com/sherief-abraham/a-beautiful-end",
+          "publisher_metadata": {
+            "id": 326500290,
+            "urn": "soundcloud:tracks:326500290"
+          },
+          "user": {
+            "id": 3025912,
+            "urn": "soundcloud:users:3025912",
+            "kind": "user",
+            "username": "sherief abraham",
+            "permalink_url": "https://soundcloud.com/sherief-abraham",
+            "avatar_url": "https://i1.sndcdn.com/avatars-yLaPyi3WBSkbro5f-iNgPrA-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2017-03-07T04:51:50Z",
+        "track": {
+          "id": 310353403,
+          "urn": "soundcloud:tracks:310353403",
+          "kind": "track",
+          "title": "Divinity",
+          "duration": 120561,
+          "full_duration": 120591,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000210411675-p706hn-large.jpg",
+          "permalink_url": "https://soundcloud.com/tomasoliva-1/divinity",
+          "publisher_metadata": {
+            "id": 310353403,
+            "urn": "soundcloud:tracks:310353403",
+            "artist": "Tomas Oliva",
+            "contains_music": true,
+            "isrc": "QZFYY2245471"
+          },
+          "user": {
+            "id": 16137092,
+            "urn": "soundcloud:users:16137092",
+            "kind": "user",
+            "username": "Tomas Oliva",
+            "permalink_url": "https://soundcloud.com/tomasoliva-1",
+            "avatar_url": "https://i1.sndcdn.com/avatars-4HHhyrZC9F0zaen2-BhkxZQ-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2017-03-07T04:51:05Z",
+        "track": {
+          "id": 310647044,
+          "urn": "soundcloud:tracks:310647044",
+          "kind": "track",
+          "title": "Between Worlds",
+          "duration": 175876,
+          "full_duration": 175923,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000210730003-co1idn-large.jpg",
+          "permalink_url": "https://soundcloud.com/symphonicsamples/between-worlds",
+          "publisher_metadata": {
+            "id": 310647044,
+            "urn": "soundcloud:tracks:310647044"
+          },
+          "user": {
+            "id": 14996151,
+            "urn": "soundcloud:users:14996151",
+            "kind": "user",
+            "username": "symphonicsamples",
+            "permalink_url": "https://soundcloud.com/symphonicsamples",
+            "avatar_url": "https://i1.sndcdn.com/avatars-000169700986-idbfaa-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2017-03-07T04:50:18Z",
+        "track": {
+          "id": 311058457,
+          "urn": "soundcloud:tracks:311058457",
+          "kind": "track",
+          "title": "Reconnaissance Mission",
+          "duration": 159100,
+          "full_duration": 159100,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000211171136-n75i60-large.jpg",
+          "permalink_url": "https://soundcloud.com/frederickruss/reconnaissance-mission",
+          "publisher_metadata": {
+            "id": 311058457,
+            "urn": "soundcloud:tracks:311058457",
+            "artist": "Frederick Alexander Russ",
+            "album_title": "Derailed"
+          },
+          "user": {
+            "id": 962220,
+            "urn": "soundcloud:users:962220",
+            "kind": "user",
+            "username": "Frederick Alexander Russ",
+            "permalink_url": "https://soundcloud.com/frederickruss",
+            "avatar_url": "https://i1.sndcdn.com/avatars-3fuOuqR1sJnHztdz-5iDSNA-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2017-02-01T22:47:12Z",
+        "track": {
+          "id": 304337565,
+          "urn": "soundcloud:tracks:304337565",
+          "kind": "track",
+          "title": "Where Two Worlds Meet (from Semispheres OST)",
+          "duration": 286119,
+          "full_duration": 286119,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000204500376-57zsi3-large.jpg",
+          "permalink_url": "https://soundcloud.com/sidbarnhoorn/where-two-worlds-meet-from-semispheres-ost",
+          "publisher_metadata": {
+            "id": 304337565,
+            "urn": "soundcloud:tracks:304337565",
+            "artist": "Siddhartha Barnhoorn",
+            "album_title": "Semispheres OST",
+            "contains_music": true,
+            "writer_composer": "Siddhartha Barnhoorn"
+          },
+          "user": {
+            "id": 3668423,
+            "urn": "soundcloud:users:3668423",
+            "kind": "user",
+            "username": "Sid Barnhoorn",
+            "permalink_url": "https://soundcloud.com/sidbarnhoorn",
+            "avatar_url": "https://i1.sndcdn.com/avatars-000177024075-vcah9n-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2016-10-09T21:37:32Z",
+        "track": {
+          "id": 286896503,
+          "urn": "soundcloud:tracks:286896503",
+          "kind": "track",
+          "title": "Homeward (CC-BY)",
+          "duration": 158890,
+          "full_duration": 158917,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000542062695-8z7y3n-large.jpg",
+          "permalink_url": "https://soundcloud.com/scottbuckley/homeward-creative-commons",
+          "publisher_metadata": {
+            "id": 286896503,
+            "urn": "soundcloud:tracks:286896503",
+            "artist": "Scott Buckley",
+            "album_title": "www.scottbuckley.com.au/library",
+            "contains_music": true,
+            "isrc": "AUZVV1900014"
+          },
+          "user": {
+            "id": 1109382,
+            "urn": "soundcloud:users:1109382",
+            "kind": "user",
+            "username": "Scott Buckley",
+            "permalink_url": "https://soundcloud.com/scottbuckley",
+            "avatar_url": "https://i1.sndcdn.com/avatars-eznlVdjSz0RD45fM-zjk4yA-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2016-09-18T03:20:47Z",
+        "track": {
+          "id": 283027216,
+          "urn": "soundcloud:tracks:283027216",
+          "kind": "track",
+          "title": "Metroid Zero Mission - Kraid's Lair Orchestra",
+          "duration": 195860,
+          "full_duration": 195883,
+          "streamable": true,
+          "policy": "ALLOW",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000182714557-slwljs-large.jpg",
+          "permalink_url": "https://soundcloud.com/blaketothefuture/metroid-zero-mission-kraids-lair-orchestra",
+          "publisher_metadata": {
+            "id": 283027216,
+            "urn": "soundcloud:tracks:283027216",
+            "artist": "The Blake Robinson Synthetic Orchestra",
+            "album_title": "A Collection of Orchestrations"
+          },
+          "user": {
+            "id": 1001816,
+            "urn": "soundcloud:users:1001816",
+            "kind": "user",
+            "username": "blakerobinson",
+            "permalink_url": "https://soundcloud.com/blaketothefuture",
+            "avatar_url": "https://i1.sndcdn.com/avatars-jryve61DeQQjHVkU-tl1eQw-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2016-08-17T05:24:54Z",
+        "track": {
+          "id": 263776625,
+          "urn": "soundcloud:tracks:263776625",
+          "kind": "track",
+          "title": "Limits Of Humanity",
+          "duration": 400600,
+          "full_duration": 400650,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000162510326-qybk9p-large.jpg",
+          "permalink_url": "https://soundcloud.com/epicmountain/limits-of-humanity",
+          "publisher_metadata": {
+            "id": 263776625,
+            "urn": "soundcloud:tracks:263776625",
+            "artist": "Epic Mountain",
+            "contains_music": true,
+            "isrc": "QZ4JJ1781647"
+          },
+          "user": {
+            "id": 84876091,
+            "urn": "soundcloud:users:84876091",
+            "kind": "user",
+            "username": "Epic Mountain",
+            "permalink_url": "https://soundcloud.com/epicmountain",
+            "avatar_url": "https://i1.sndcdn.com/avatars-jMKNkInVkCT9DtWo-sQlJ1g-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2016-08-12T23:14:02Z",
+        "track": {
+          "id": 193379018,
+          "urn": "soundcloud:tracks:193379018",
+          "kind": "track",
+          "title": "Desert Rose Lament [wip] (Lara Ausensi and Sid Barnhoorn)",
+          "duration": 60568,
+          "full_duration": 60582,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000108315806-fn3v3p-large.jpg",
+          "permalink_url": "https://soundcloud.com/lara-ausensi/desert-rose-lament-wip",
+          "publisher_metadata": null,
+          "user": {
+            "id": 42323715,
+            "urn": "soundcloud:users:42323715",
+            "kind": "user",
+            "username": "LARA AUSENSI Vocalist",
+            "permalink_url": "https://soundcloud.com/lara-ausensi",
+            "avatar_url": "https://i1.sndcdn.com/avatars-W7SyrtOW4cWyhu7x-KFvvAA-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2016-08-08T20:35:20Z",
+        "track": {
+          "id": 277378922,
+          "urn": "soundcloud:tracks:277378922",
+          "kind": "track",
+          "title": "Helios - You The Rose",
+          "duration": 236206,
+          "full_duration": 236247,
+          "streamable": true,
+          "policy": "ALLOW",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000175409372-y0dkc4-large.jpg",
+          "permalink_url": "https://soundcloud.com/keithkenniff/you-the-rose",
+          "publisher_metadata": {
+            "id": 277378922,
+            "urn": "soundcloud:tracks:277378922",
+            "artist": "Helios",
+            "album_title": "Yume (b sides)"
+          },
+          "user": {
+            "id": 176726,
+            "urn": "soundcloud:users:176726",
+            "kind": "user",
+            "username": "Keith Kenniff",
+            "permalink_url": "https://soundcloud.com/keithkenniff",
+            "avatar_url": "https://i1.sndcdn.com/avatars-UkgBdsKuyV3c2U1j-eP76nw-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2016-08-06T13:05:18Z",
+        "track": {
+          "id": 277063707,
+          "urn": "soundcloud:tracks:277063707",
+          "kind": "track",
+          "title": "Warriors of Destiny (Ultima V Orchestral Remix)",
+          "duration": 240347,
+          "full_duration": 240400,
+          "streamable": true,
+          "policy": "ALLOW",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000175112528-5e05dm-large.jpg",
+          "permalink_url": "https://soundcloud.com/scottbuckley/warriors-of-destiny-ultima-5-remix",
+          "publisher_metadata": {
+            "id": 277063707,
+            "urn": "soundcloud:tracks:277063707",
+            "artist": "Scott Buckley",
+            "album_title": "Orchestral Remixes"
+          },
+          "user": {
+            "id": 1109382,
+            "urn": "soundcloud:users:1109382",
+            "kind": "user",
+            "username": "Scott Buckley",
+            "permalink_url": "https://soundcloud.com/scottbuckley",
+            "avatar_url": "https://i1.sndcdn.com/avatars-eznlVdjSz0RD45fM-zjk4yA-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2016-03-04T03:44:34Z",
+        "track": {
+          "id": 250083433,
+          "urn": "soundcloud:tracks:250083433",
+          "kind": "track",
+          "title": "Stars In Her Skies (CC-BY)",
+          "duration": 277281,
+          "full_duration": 277340,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000542045301-0uqxfu-large.jpg",
+          "permalink_url": "https://soundcloud.com/scottbuckley/stars-in-her-skies",
+          "publisher_metadata": {
+            "id": 250083433,
+            "urn": "soundcloud:tracks:250083433",
+            "artist": "Scott Buckley",
+            "album_title": "www.scottbuckley.com.au/library",
+            "contains_music": true,
+            "isrc": "AUZVV1900001"
+          },
+          "user": {
+            "id": 1109382,
+            "urn": "soundcloud:users:1109382",
+            "kind": "user",
+            "username": "Scott Buckley",
+            "permalink_url": "https://soundcloud.com/scottbuckley",
+            "avatar_url": "https://i1.sndcdn.com/avatars-eznlVdjSz0RD45fM-zjk4yA-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2016-01-14T00:06:59Z",
+        "track": {
+          "id": 241342788,
+          "urn": "soundcloud:tracks:241342788",
+          "kind": "track",
+          "title": "Disintegration Anxiety",
+          "duration": 251219,
+          "full_duration": 251269,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000142651915-v6xrix-large.jpg",
+          "permalink_url": "https://soundcloud.com/explosionsinthesky/disintegration-anxiety",
+          "publisher_metadata": null,
+          "user": {
+            "id": 3460819,
+            "urn": "soundcloud:users:3460819",
+            "kind": "user",
+            "username": "Explosions In the Sky",
+            "permalink_url": "https://soundcloud.com/explosionsinthesky",
+            "avatar_url": "https://i1.sndcdn.com/avatars-000150847511-wqtxdo-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2015-08-10T23:43:10Z",
+        "track": {
+          "id": 217786637,
+          "urn": "soundcloud:tracks:217786637",
+          "kind": "track",
+          "title": "Luminary by Siddhartha Barnhoorn (feat. Lara Ausensi)",
+          "duration": 170103,
+          "full_duration": 170099,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000125348067-aus7fc-large.jpg",
+          "permalink_url": "https://soundcloud.com/lara-ausensi/luminary-by-siddhartha-barnhoorn-feat-lara-ausensi",
+          "publisher_metadata": null,
+          "user": {
+            "id": 42323715,
+            "urn": "soundcloud:users:42323715",
+            "kind": "user",
+            "username": "LARA AUSENSI Vocalist",
+            "permalink_url": "https://soundcloud.com/lara-ausensi",
+            "avatar_url": "https://i1.sndcdn.com/avatars-W7SyrtOW4cWyhu7x-KFvvAA-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2015-07-16T05:41:25Z",
+        "track": {
+          "id": 157642265,
+          "urn": "soundcloud:tracks:157642265",
+          "kind": "track",
+          "title": "A Winged Victory For The Sullen \u2013 Atomos VI",
+          "duration": 363143,
+          "full_duration": 363188,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000084471744-rvjj7p-large.jpg",
+          "permalink_url": "https://soundcloud.com/erasedtapes/a-winged-victory-for-the-sullen-atomos-vi-edit",
+          "publisher_metadata": {
+            "id": 157642265,
+            "urn": "soundcloud:tracks:157642265",
+            "artist": "A Winged Victory For The Sullen",
+            "album_title": "Atomos",
+            "contains_music": true,
+            "publisher": "Music Sales Group",
+            "upc_or_ean": "4050486109595",
+            "isrc": "GBWZD1406105",
+            "explicit": false,
+            "p_line": "2014 Erased Tapes Records Ltd.",
+            "p_line_for_display": "\u2117 2014 Erased Tapes Records Ltd.",
+            "writer_composer": "Adam Bryanbaum Wiltzie & Dustin O'Halloran",
+            "release_title": "Atomos VI"
+          },
+          "user": {
+            "id": 188998,
+            "urn": "soundcloud:users:188998",
+            "kind": "user",
+            "username": "Erased Tapes",
+            "permalink_url": "https://soundcloud.com/erasedtapes",
+            "avatar_url": "https://i1.sndcdn.com/avatars-Uy8Up7BiRc73b2sO-y41Fsg-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2015-07-16T05:41:23Z",
+        "track": {
+          "id": 134860421,
+          "urn": "soundcloud:tracks:134860421",
+          "kind": "track",
+          "title": "A Winged Victory For The Sullen \u2013 Atomos VII",
+          "duration": 479958,
+          "full_duration": 480018,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000070882113-xv4s1f-large.jpg",
+          "permalink_url": "https://soundcloud.com/erasedtapes/a-winged-victory-for-the-sullen-atomos-vii",
+          "publisher_metadata": {
+            "id": 134860421,
+            "urn": "soundcloud:tracks:134860421",
+            "artist": "A Winged Victory For The Sullen",
+            "album_title": "Atomos VII",
+            "contains_music": true,
+            "publisher": "Music Sales Group",
+            "upc_or_ean": "4050486908303",
+            "isrc": "GBWZD1405601",
+            "explicit": false,
+            "p_line": "2014 Erased Tapes Records Ltd.",
+            "p_line_for_display": "\u2117 2014 Erased Tapes Records Ltd.",
+            "writer_composer": "Adam Bryanbaum Wiltzie & Dustin O'Halloran",
+            "release_title": "Atomos VII"
+          },
+          "user": {
+            "id": 188998,
+            "urn": "soundcloud:users:188998",
+            "kind": "user",
+            "username": "Erased Tapes",
+            "permalink_url": "https://soundcloud.com/erasedtapes",
+            "avatar_url": "https://i1.sndcdn.com/avatars-Uy8Up7BiRc73b2sO-y41Fsg-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2015-07-12T23:36:57Z",
+        "track": {
+          "id": 206394016,
+          "urn": "soundcloud:tracks:206394016",
+          "kind": "track",
+          "title": "Mint Julep - The Promise",
+          "duration": 290684,
+          "full_duration": 290690,
+          "streamable": true,
+          "policy": "ALLOW",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000146399866-8s0yx9-large.jpg",
+          "permalink_url": "https://soundcloud.com/keithkenniff/mint-julep-the-promise-new-song",
+          "publisher_metadata": {
+            "id": 206394016,
+            "urn": "soundcloud:tracks:206394016"
+          },
+          "user": {
+            "id": 176726,
+            "urn": "soundcloud:users:176726",
+            "kind": "user",
+            "username": "Keith Kenniff",
+            "permalink_url": "https://soundcloud.com/keithkenniff",
+            "avatar_url": "https://i1.sndcdn.com/avatars-UkgBdsKuyV3c2U1j-eP76nw-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2015-07-12T23:33:34Z",
+        "track": {
+          "id": 208293770,
+          "urn": "soundcloud:tracks:208293770",
+          "kind": "track",
+          "title": "Mint Julep - Broken Devotion (download)",
+          "duration": 292539,
+          "full_duration": 292546,
+          "streamable": true,
+          "policy": "ALLOW",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000118816621-4efy71-large.jpg",
+          "permalink_url": "https://soundcloud.com/keithkenniff/mint-julep-broken-devotion-free-download",
+          "publisher_metadata": {
+            "id": 208293770,
+            "urn": "soundcloud:tracks:208293770"
+          },
+          "user": {
+            "id": 176726,
+            "urn": "soundcloud:users:176726",
+            "kind": "user",
+            "username": "Keith Kenniff",
+            "permalink_url": "https://soundcloud.com/keithkenniff",
+            "avatar_url": "https://i1.sndcdn.com/avatars-UkgBdsKuyV3c2U1j-eP76nw-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2015-07-12T23:16:34Z",
+        "track": {
+          "id": 213673824,
+          "urn": "soundcloud:tracks:213673824",
+          "kind": "track",
+          "title": "Pearls",
+          "duration": 286505,
+          "full_duration": 286510,
+          "streamable": true,
+          "policy": "ALLOW",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000122517869-uyl5qq-large.jpg",
+          "permalink_url": "https://soundcloud.com/keithkenniff/helios-pearls",
+          "publisher_metadata": null,
+          "user": {
+            "id": 176726,
+            "urn": "soundcloud:users:176726",
+            "kind": "user",
+            "username": "Keith Kenniff",
+            "permalink_url": "https://soundcloud.com/keithkenniff",
+            "avatar_url": "https://i1.sndcdn.com/avatars-UkgBdsKuyV3c2U1j-eP76nw-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2014-07-25T01:23:56Z",
+        "track": {
+          "id": 129697092,
+          "urn": "soundcloud:tracks:129697092",
+          "kind": "track",
+          "title": "\"Birdsong\" Floex Angry Bird Remix",
+          "duration": 290470,
+          "full_duration": 290508,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000068199952-73jyto-large.jpg",
+          "permalink_url": "https://soundcloud.com/floex/birdsong-floex-angry-bird",
+          "publisher_metadata": null,
+          "user": {
+            "id": 965552,
+            "urn": "soundcloud:users:965552",
+            "kind": "user",
+            "username": "Floex",
+            "permalink_url": "https://soundcloud.com/floex",
+            "avatar_url": "https://i1.sndcdn.com/avatars-000215636887-z69ica-large.jpg"
+          }
+        }
+      },
+      {
+        "created_at": "2012-04-04T00:27:58Z",
+        "track": {
+          "id": 25942362,
+          "urn": "soundcloud:tracks:25942362",
+          "kind": "track",
+          "title": "Mist",
+          "duration": 46361,
+          "full_duration": 46383,
+          "streamable": true,
+          "policy": "MONETIZE",
+          "artwork_url": "https://i1.sndcdn.com/artworks-000012949442-364dfj-large.jpg",
+          "permalink_url": "https://soundcloud.com/epicsound/mist",
+          "publisher_metadata": null,
+          "user": {
+            "id": 1521714,
+            "urn": "soundcloud:users:1521714",
+            "kind": "user",
+            "username": "epicsound",
+            "permalink_url": "https://soundcloud.com/epicsound",
+            "avatar_url": "https://i1.sndcdn.com/avatars-XlhKbnKOpttRYIzf-woQUhg-large.jpg"
+          }
+        }
+      }
+    ],
+    "next_href": "https://api-v2.soundcloud.com/users/1109382/track_likes?offset=2012-04-04T00%3A27%3A58.000Z%2Cuser-track-likes%2C000-00000000000001109382-00000000000025942362&limit=100"
+  },
+  {
+    "collection": [],
+    "next_href": null
+  }
+]

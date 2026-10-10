@@ -1,0 +1,6 @@
+{
+  "bundle": {
+    "resources": { "resources/libmpv-2.dll": "libmpv-2.dll", "resources/licenses/": "licenses/" },
+    "windows": { "nsis": { "displayLanguageSelector": false, "installMode": "currentUser", "languages": ["English"], "compression": "lzma" }, "webviewInstallMode": { "type": "downloadBootstrapper", "silent": true } }
+  }
+}

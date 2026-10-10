@@ -1,0 +1,9 @@
+{
+  "collection": [
+    {"kind":"like","created_at":"2026-10-01T12:00:00Z","track":{"id":101,"kind":"track","title":"First track","duration":180000,"streamable":true,"policy":"ALLOW","permalink_url":"https://soundcloud.com/creator/first-track","user":{"id":1,"username":"Creator","permalink_url":"https://soundcloud.com/creator"}}},
+    {"kind":"like","track":null},
+    {"kind":"like","track":{"id":102,"kind":"track","title":"Unavailable track","duration":180000,"streamable":false,"policy":"BLOCK","user":{"id":1,"username":"Creator","permalink_url":"https://soundcloud.com/creator"}}}
+  ],
+  "next_href": null,
+  "query_urn": "soundcloud:users:1"
+}
