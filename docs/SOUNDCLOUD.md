@@ -1,6 +1,6 @@
 # SoundCloud integration
 
-Investigated against the live service on 5 October 2026. This is an independent
+Investigated against the live service on 5 and 10 October 2026. This is an independent
 client, not affiliated with SoundCloud. Public access remains subject to
 SoundCloud's terms, geographic restrictions and service changes.
 
@@ -21,7 +21,7 @@ SoundCloud's terms, geographic restrictions and service changes.
 - [URN migration](https://developers.soundcloud.com/blog/urn-num-to-string/):
   entity references use string URNs. IDs must not be truncated to 32 bits.
 
-## What v0.1.0 uses
+## What v0.2.0 uses
 
 Guest SoundCloud access uses the **undocumented public web API**
 `api-v2.soundcloud.com`. The current public client identifier is discovered
@@ -56,8 +56,10 @@ can replace them without changing playback, queue or pages.
 
 ## Authentication
 
-SoundCloud login, likes, following, personal playlists and personalized feeds
-are **not implemented**. No cookies, browser sessions or user access tokens are
+SoundCloud login, remote like modifications, following, private playlists and
+account-personalized feeds are **not implemented**. Public profile likes can
+be imported into the local library as described below. No cookies, browser
+sessions or user access tokens are
 scraped. Future official OAuth support needs registered credentials and a
 deployed token service, PKCE/state validation and OS-backed token storage.
 Reson favorites and local playlists are separate, fully functional local data.

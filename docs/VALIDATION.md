@@ -1,99 +1,154 @@
-# Validation evidence
+# Reson v0.2.0 validation
 
-Validation uses real public SoundCloud content, not a mock catalog or embedded
-web player. Test audio output is deleted after inspection.
+All desktop captures come from the standalone, optimized Tauri application,
+with its normal React/core IPC and native libmpv engine. There is no Vite
+server, injected demonstration collection, embedded SoundCloud player or
+simulated import in these checks. Public service checks were run on
+10 October 2026; deterministic CI tests use recorded and explicit fault fixtures.
 
-## Native desktop on Linux, 5 October 2026
+## Automated checks
 
-The actual Tauri application was launched with an empty profile under
-WebKitGTK/Xvfb. WebDriver operated the rendered React UI and inspected the
-authoritative Rust snapshots over the normal application IPC.
+39 Rust tests and 16 frontend tests pass, alongside Rust formatting and clippy
+with warnings denied, ESLint, TypeScript checking and the production frontend
+build. Windows CI also checks and tests the full Tauri workspace.
 
-- Search `Scott Buckley`: 30 real tracks, 30 artists and 30 playlists.
-- Select `Pigstep — Scott Buckley`: fresh AAC HLS source resolved and native
-  libmpv playback advanced in real time.
-- PulseAudio output-device monitor: 575,182 float PCM samples in a six-second
-  capture; RMS 0.022071, peak 0.161145. This confirms audio reached an output
-  device rather than merely updating a timer. The device was a headless null
-  sink; physical speakers were unavailable.
-- UI pause stopped position at 9,497 ms; resume advanced it. UI HLS seek moved
-  to 45,000 ms. UI volume updated core state to 0.3.
-- A 30-track queue was edited/reordered/removed; shuffle and every repeat mode
-  were toggled in the UI. Next loaded another real track and Previous returned
-  to the earlier track.
-- The process was closed and relaunched. Queue/current entry, about 30 seconds
-  of position, volume, favorites, local playlist and installation UUID persisted.
-  State restored paused; Resume refreshed the source and continued playback.
-- Space controlled playback after restart. Actual window screenshots are in
-  `docs/images/`; their content was not fabricated or edited into a mockup.
+- Public profile normalization, URL/domain/path rejection, numeric profile
+  resolution, recorded real profile responses and malformed cursor responses.
+- Three-page import of 207 tracks, following cursors even after a short page;
+  empty versus inaccessible collections, deleted entries and unavailable metadata.
+- Rate limiting, cancellation during profile resolution, an in-flight page
+  and a 1,800-second cooldown. Cancellation checks complete within 500 ms.
+- Partial failure recovery, repeated-cursor reporting, reimport idempotency,
+  incremental refresh, simultaneous sources and alias/ownership conflicts.
+- SQLite reopen, v0.1 schema migration, interrupted job recovery, provider-scoped
+  identifiers, track dismissal/deletion and both source removal modes. A
+  regression check prevents an already resolving job from recreating a source
+  after cancellation/removal.
+- Navigation, search, dialog submission/progress/cancellation/partial errors,
+  focus trapping/restoration and Escape when a focused input becomes disabled.
+  Track selection, double-click/keyboard playback, context-menu queue actions,
+  shortcuts, details and provenance. A 12,000-track fixture renders a bounded
+  visible window instead of thousands of DOM rows.
+- Existing playback race handling, queue/shuffle/repeat behavior, stream refresh,
+  outages, storage configuration, artwork eviction and settings volume preservation.
 
-Separate native decoding validated 4,194,304 inspected float PCM samples,
-RMS 0.065142, peak 0.714613 from the refreshed SoundCloud HLS source.
+Fixtures are documented in
+[`crates/reson-core/tests/fixtures/soundcloud/README.md`](../crates/reson-core/tests/fixtures/soundcloud/README.md).
+Ordinary tests never require live SoundCloud access.
 
-## Production bundle and Windows
+## Live import and persistence
 
-The standalone Linux production bundle was built and run without a Vite/dev
-server. Real artist tracks and a hydrated SoundCloud playlist rendered; Back
-retained the search query/results. A nonexistent public SoundCloud link
-returned a recoverable unavailability error. Playback, controls and queue
-editing passed again with 575,098 captured output samples (RMS 0.022084).
-A separately launched production process restored the 29-entry queue, local
-library, volume 0.3 and position 30,000 ms, then refreshed the source and resumed.
+The real public SoundCloud web API exposed Scott Buckley's 46 liked tracks.
+The first page contained 46 entries and a cursor; a second, empty page supplied
+the terminal `next_href: null`. Both pages were requested. This deliberately
+checks that a short first page does not stop pagination.
 
-The final production rerun with `scripts/validate-desktop.py` passed all 27
-functional checks, including two sessions in the same WebDriver setup. It
-captured 569,280 output-device PCM samples (RMS 0.022049, peak 0.160746), verified
-that changing the cache setting preserves playback volume, and resumed a fresh
-stream after restarting. The README captures come from this production run.
+The import manager and the production desktop UI both saved all 46 tracks in
+SQLite without authentication. The UI showed profile identity, actual saved,
+duplicate and failure counters, and the tracks appeared immediately in Liked
+Tracks. Refresh fetched both pages again: 0 new saves, 46 duplicates, 0 failures.
+An actual process close/relaunch retained the source and all imported tracks.
+Double-clicking an imported track produced native playback through the normal
+player; imports never alter remote SoundCloud likes.
 
-The production bundle was also launched with a deliberately unreachable HTTP
-proxy. Real network I/O failed: the player showed a useful error, retained the
-queue, and local favorites/playlist edits remained functional. Search failed
-gracefully and the application stayed responsive.
+These observations describe the public collection returned during the test,
+not a guarantee that SoundCloud exposes every user's likes. Inaccessible
+responses and partial imports are reported distinctly and preserve committed pages.
 
-[Windows validation run 37285650816](https://github.com/atlasru/reson/actions/runs/37285650816)
-completed successfully. Both portable and freshly installed Windows executables
-produced 4,194,304 inspected PCM samples, RMS 0.065142, peak 0.714613 from actual
-SoundCloud AAC HLS. The release pipeline repeats these checks on the
-release commit before publishing its artifacts.
+## Production desktop interaction and visual review
 
-Tracked source and native release output were scanned for hardcoded access
-tokens/client secrets, GitHub credential patterns and private-key blocks; no
-credentials were found. Transient URLs remain runtime memory only.
+The final Linux production run passed 54 checks. The production workflow
+captures and inspects these real views:
 
-## Automated verification
+1. Home and real SoundCloud search results.
+2. Artist and track details.
+3. Active native playback and the queue.
+4. Library and the import dialog.
+5. Completed import, imported likes, sources and imported-track playback.
+6. Settings, plus Settings and Liked Tracks at 900 × 620.
 
-Core tests exercise malformed/oversized provider input, cancellation, rate
-cooldowns, large URNs, normalized identities, multi-source preservation,
-unavailable content, source refresh, outage behavior, loading/pause races,
-queue ordering/shuffle/repeat, configuration, artwork eviction and SQLite
-migration/reopen. Frontend tests verify seek gestures and real control IPC.
+The 1366 × 768 layout and the smaller window fit the persistent playback bar
+without clipped controls or horizontal overflow. The small track layout retains
+artist names below titles. Visual review removed unreadable native select
+backgrounds and the remaining placeholder account panel. Artwork, compact row
+alignment, menu placement, text overflow and source provenance were reviewed
+from actual desktop captures. README images are selected raw production captures.
 
-25 core tests and 3 frontend tests pass. The frontend regression test also
-guards volume preservation when subsequent Settings changes are submitted.
+Native checks exercise Ctrl K search focus, Back/search restoration, right-click
+Play Next/Add to Queue, queue reorder/removal, Escape, Space pause/resume, seek,
+volume, shuffle/repeat, real import/refresh and double-clicking a saved import.
+Changing settings preserves playback volume. Restart retains both imports and
+settings. The report records each successful assertion in `checks.json`.
 
-To repeat desktop checks, start `tauri-driver` in a fresh profile and run
-`python scripts/validate-desktop.py --application /absolute/path/to/reson`.
-Linux output-device capture can be included with
-`--capture-device reson_test.monitor` and a configured PulseAudio server.
-Screenshots/reports go to the selected `--output` directory. The full two-session
-check requires a WebDriver/display setup that remains alive across app exits;
-headless Xvfb should use `-noreset`.
+The Linux desktop run uses WebKitGTK with Xvfb and a PulseAudio null sink.
+A six-second output-device monitor recorded 575,026 float PCM samples,
+RMS 0.019403 and peak 0.184216, confirming that actual decoded sound reached the
+output device. Temporary PCM files were deleted. This does not test physical
+speakers. The Linux validation build disables LTO to accommodate the available
+linker/sysroot; Windows production builds retain the repository's ThinLTO setting.
 
-Windows Actions checks the full workspace, produces x64 installer/portable
-builds, validates the portable DLL against live SoundCloud, performs a fresh
-silent installation and repeats native decoding from the installed executable.
-It then starts the installed application normally, waits for its native window
-and the frontend's successful core bootstrap, and verifies that closing the
-window exits the process. A single local startup log records this connection;
-it contains no library or account data.
-CI status and artifacts are linked from the release/PR. An in-progress or failed
-run is never described as successful.
+## Windows packaging and release validation
 
-## Limits of this environment
+[Windows run 38077582767](https://github.com/atlasru/reson/actions/runs/38077582767)
+and the matching pull-request run passed all frontend, core and Windows jobs.
+The Windows production desktop report records 56 successful checks and 15
+actual WebView2 captures, including live import, refresh and process restart.
+The final release workflow repeats these checks before publishing.
 
-Windows media-overlay rendering, physical hardware media keys, real speakers,
-device removal and live Discord presence need an interactive Windows desktop
-and a registered Discord application. Native session/presence integration is
-implemented, but those hardware/service checks are not claimed here. No
-SoundCloud OAuth or Reson account backend is provisioned.
+GitHub Actions builds an x64 NSIS installer and a portable ZIP containing
+`Reson.exe`, the pinned LGPL libmpv DLL and all required license notices.
+It creates SHA256SUMS.txt for both files, validates live SoundCloud/native PCM
+from the portable executable, performs a fresh silent installation and repeats
+native decoding from the installed executable. Both probes inspect 4,194,304
+float PCM samples (RMS 0.065142, peak 0.714613).
+
+The installed desktop is then started normally. CI waits for its native window
+and successful frontend bootstrap, checks native audio initialization, and
+requires a normal process exit when the window is closed.
+
+The full production UI script attaches EdgeDriver to the actual release app's
+WebView2, exercises the workflow above, captures its rendered views and restarts
+the native process. The driver version matches the installed WebView2 runtime.
+On elevated Windows runners, temporary HKLM policy values scoped to `Reson.exe`
+enable the test connection and an isolated WebView profile. The workflow restores
+these values afterward. No test connection or policy is installed with the app.
+
+The headless Windows UI check explicitly selects libmpv's native null output
+through the normal settings IPC. Real HLS decoding and playback timing remain
+active. Audible PCM energy is checked separately by both Windows executable
+probes and by the Linux output-device monitor; a UI timer alone is insufficient.
+
+Release publication requires successful frontend, core and Windows jobs and
+verifies the SHA-256 manifest before publishing. A failed run is never described
+as a validated release. The current run and screenshot artifacts are linked
+from the pull request and release.
+
+## Repeating the checks
+
+Run the normal format/lint/typecheck/test/build commands in the README.
+For a live, persistent-library smoke test:
+
+```sh
+cargo run -p reson-core --example likes_probe -- scottbuckley
+```
+
+For production desktop UI checks, start `tauri-driver` and run:
+
+```sh
+python scripts/validate-redesign.py --application /absolute/path/to/reson --output ./screenshots
+```
+
+On Linux, direct `WebKitWebDriver` can also be used with
+`--native-webkit-driver --driver-url http://127.0.0.1:4445`.
+A configured PulseAudio monitor enables `--capture-device reson_test.monitor`.
+Headless Xvfb must remain alive across app exits (`-noreset`).
+Windows Actions supplies the WebView2 connection setup and driver automatically.
+On a headless Windows host with no sound device, pass `--audio-device null`.
+
+## Environment limits
+
+Physical Windows speakers, device removal, hardware media keys, media-overlay
+rendering and live Discord presence require an interactive hardware desktop and,
+for Discord, a registered application. Those hardware/service observations are
+not claimed by the headless tests. Public imports require no account; SoundCloud
+OAuth and remote account modifications remain outside this release.

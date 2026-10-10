@@ -303,7 +303,7 @@ try:
     wait(lambda: js('return !document.querySelector(".dialog")'))
     # Double-click an imported row through the real UI and native player.
     js('document.querySelector(".track-row").dispatchEvent(new MouseEvent("dblclick",{bubbles:true}));')
-    wait(native_playing,180,'imported track playback')
+    wait(lambda: native_playing(True),180,'imported track playback')
     imported=rpc('bootstrap')['player']['current']
     check('Double-click plays a saved import',any(t['internal_id']==imported['internal_id'] for t in before))
     check('Imported track plays natively',True,imported['title'])

@@ -7,10 +7,11 @@ library and native playback engine. **v0.2.0 adds public SoundCloud likes import
 [SoundCloud integration](docs/SOUNDCLOUD.md) ·
 [Architecture](docs/ARCHITECTURE.md) · [Roadmap](docs/ROADMAP.md)
 
-![Reson playing a real SoundCloud search result](docs/images/reson-search.png)
+![Reson playing a track imported from a public SoundCloud profile](docs/images/reson-likes.png)
 
-Actual native application capture with real SoundCloud results and native
-audio playback. [Queue screenshot](docs/images/reson-queue.png).
+Actual production desktop capture with real SoundCloud results and native
+audio playback. [Search](docs/images/reson-search.png) ·
+[Queue](docs/images/reson-queue.png).
 
 ## Install
 
@@ -157,8 +158,8 @@ request cancellation and rate limits, optional provider
 capabilities, queue operations/repeat/shuffle, source refresh, network failure,
 SQLite migration/reopen, cache limits, configuration and player gestures.
 
-See [recorded real playback and restart validation](docs/VALIDATION.md) and
-`scripts/validate-desktop.py` for repeatable native UI checks.
+See [recorded production playback, import and restart validation](docs/VALIDATION.md)
+and `scripts/validate-redesign.py` for repeatable native UI checks.
 
 ## Contributing
 
